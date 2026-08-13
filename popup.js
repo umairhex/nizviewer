@@ -100,26 +100,21 @@
       t.addEventListener('change', () => updatePref(t.getAttribute('data-pref'), t.checked));
     });
 
-    if (btnSelectAll) {
-      btnSelectAll.addEventListener('click', async () => {
-        document.querySelectorAll('.pref-toggle').forEach((t) => {
-          t.checked = true;
-          prefs[t.getAttribute('data-pref')] = true;
-        });
-        await saveAndBroadcast();
-        flashCheckIcon(btnSelectAll);
+    async function setAllPrefs(value, btn) {
+      document.querySelectorAll('.pref-toggle').forEach((t) => {
+        t.checked = value;
+        prefs[t.getAttribute('data-pref')] = value;
       });
+      await saveAndBroadcast();
+      if (btn) flashCheckIcon(btn);
+    }
+
+    if (btnSelectAll) {
+      btnSelectAll.addEventListener('click', () => setAllPrefs(true, btnSelectAll));
     }
 
     if (btnSelectNone) {
-      btnSelectNone.addEventListener('click', async () => {
-        document.querySelectorAll('.pref-toggle').forEach((t) => {
-          t.checked = false;
-          prefs[t.getAttribute('data-pref')] = false;
-        });
-        await saveAndBroadcast();
-        flashCheckIcon(btnSelectNone);
-      });
+      btnSelectNone.addEventListener('click', () => setAllPrefs(false, btnSelectNone));
     }
 
     if (btnClearCache) {

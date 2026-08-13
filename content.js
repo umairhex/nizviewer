@@ -46,6 +46,35 @@
   let cache = {};
   let badgePrefs = { ...DEFAULT_BADGE_PREFS };
 
+  function extractExperienceFromText(text) {
+    const yearNums = [];
+    const rangePat = /(\d+(?:\.\d+)?)\s*(?:to|[-–—])\s*(\d+(?:\.\d+)?)\s*(?:year|yr)s?/gi;
+    for (const m of text.matchAll(rangePat)) yearNums.push(parseFloat(m[1]), parseFloat(m[2]));
+    const orMorePat = /(?:at\s+least|minimum\s+of|min)\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:or)?\s*more\s*(?:year|yr)s?/gi;
+    for (const m of text.matchAll(orMorePat)) {
+      const val = parseFloat(m[1] || m[2]);
+      if (!isNaN(val)) yearNums.push(val);
+    }
+    const standalonePat = /(\d+(?:\.\d+)?)\s*(?:\+)?\s*(?:year|yr)s?/gi;
+    let exM;
+    while ((exM = standalonePat.exec(text)) !== null) {
+      const val = parseFloat(exM[1]);
+      const st = Math.max(0, exM.index - 60);
+      const en = Math.min(text.length, exM.index + 80);
+      const ctx = text.substring(st, en).toLowerCase();
+      if (/\b(?:exp|experience|required|requirements|minimum|min|at\s+least|plus|prefer)\b/.test(ctx)) yearNums.push(val);
+    }
+    if (yearNums.length > 0) {
+      const valid = Array.from(new Set(yearNums.filter((n) => n >= 0.5 && n <= 25))).sort((a, b) => a - b);
+      if (valid.length > 0) {
+        const mn = valid[0], mx = valid[valid.length - 1];
+        return mn === mx ? `${mn}+ yrs` : `${mn}\u2013${mx} yrs`;
+      }
+    }
+    if (/entry[\s-]*level|no\s+exp|fresh\s*grad/i.test(text)) return 'Entry Level';
+    return undefined;
+  }
+
   function classifyShift(text) {
     if (!text || text.length < 3) return void 0;
     const t = text.toLowerCase();
@@ -162,43 +191,8 @@
         workSetup = 'Onsite';
     }
     if (!workSetup && /\bno\s+remote\b/i.test(text)) workSetup = 'Onsite';
-    let experience;
-    const yearNums = [];
-    const rangePattern = /(\d+(?:\.\d+)?)\s*(?:to|[-–—])\s*(\d+(?:\.\d+)?)\s*(?:year|yr)s?/gi;
-    for (const m of text.matchAll(rangePattern)) {
-      yearNums.push(parseFloat(m[1]), parseFloat(m[2]));
-    }
-    const orMorePattern =
-      /(?:at\s+least|minimum\s+of|min)\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:or)?\s*more\s*(?:year|yr)s?/gi;
-    for (const m of text.matchAll(orMorePattern)) {
-      const val = parseFloat(m[1] || m[2]);
-      if (!isNaN(val)) yearNums.push(val);
-    }
-    const standalonePattern = /(\d+(?:\.\d+)?)\s*(?:\+)?\s*(?:year|yr)s?/gi;
-    let match;
-    while ((match = standalonePattern.exec(text)) !== null) {
-      const val = parseFloat(match[1]);
-      const start = Math.max(0, match.index - 80);
-      const end = Math.min(text.length, match.index + 120);
-      const context = text.substring(start, end).toLowerCase();
-      if (
-        /\b(?:exp|experience|required|requirements|minimum|min|at\s+least|plus|prefer)\b/.test(
-          context,
-        )
-      ) {
-        yearNums.push(val);
-      }
-    }
-    if (yearNums.length > 0) {
-      const valid = Array.from(new Set(yearNums.filter((n) => n >= 0.5 && n <= 25))).sort(
-        (a, b) => a - b,
-      );
-      if (valid.length > 0) {
-        const min = valid[0];
-        const max = valid[valid.length - 1];
-        experience = min === max ? `${min}+ yrs` : `${min}\u2013${max} yrs`;
-      }
-    }
+    let experience = extractExperienceFromText(text);
+
     if (!experience && /entry[\s-]*level|no\s+experience|fresh\s*grad/i.test(text)) {
       experience = 'Entry Level';
     }
@@ -981,14 +975,60 @@
             if (!item.jk) continue;
             const existing = cache[item.jk];
             if (existing?.deepScanned && !item.deepScanned) continue;
+            
+            let shift = item.shift ?? existing?.shift;
+            let workSetup = item.workSetup ?? existing?.workSetup;
+            let experience = item.experience ?? existing?.experience;
+
+            if (!item.deepScanned && item.fullText) {
+                const text = item.fullText;
+                let taxoShift, taxoExp;
+                if (Array.isArray(item.taxoAttrs)) {
+                   for (const group of item.taxoAttrs) {
+                     if (!group || typeof group !== 'object') continue;
+                     const gl = (group.label || '').toLowerCase();
+                     if ((gl === 'shifts' || gl === 'schedules') && Array.isArray(group.attributes)) {
+                       const labels = group.attributes.map(a => typeof a.label === 'string' ? a.label.trim() : '').filter(Boolean);
+                       if (labels.length > 0) taxoShift = labels.join(', ');
+                     }
+                     if ((gl === 'experience' || gl === 'experience level') && Array.isArray(group.attributes)) {
+                       const labels = group.attributes.map(a => typeof a.label === 'string' ? a.label.trim() : '').filter(Boolean);
+                       if (labels.length > 0) taxoExp = labels.join(', ');
+                     }
+                   }
+                }
+                if (!shift) {
+                  shift = classifyShift(text);
+                  if (!shift && taxoShift) shift = classifyShift(taxoShift) || taxoShift;
+                }
+                if (!workSetup) {
+                  if (/\b(?:permanent[\s-]+remote|remote|wfh|work[\s-]+from[\s-]+home|home[\s-]*based|remotely|virtual)\b/i.test(text)) workSetup = 'Remote';
+                  else if (/\b(?:hybrid|hyrbid|mixed|work[\s-]+from[\s-]+office)\b/i.test(text)) workSetup = 'Hybrid';
+                  else if (/\b(?:on[\s-]?site|in[\s-]*office|in[\s-]*person|onsite|on[\s-]*site)\b/i.test(text)) workSetup = 'Onsite';
+                  if (!workSetup && /\bno\s+remote\b/i.test(text)) workSetup = 'Onsite';
+                }
+                if (!experience) {
+                  if (typeof item.experienceLevel === 'string' && item.experienceLevel.length > 1) {
+                    experience = item.experienceLevel;
+                  } else if (typeof item.yearsExperienceRequired === 'number' && item.yearsExperienceRequired > 0) {
+                    experience = `${item.yearsExperienceRequired}+ yrs`;
+                  } else if (taxoExp) {
+                    experience = taxoExp;
+                  }
+                  if (!experience) {
+                    experience = extractExperienceFromText(text);
+                  }
+                }
+            }
+
             const updated = {
               ...existing,
               datePostedIso: item.dateIso ?? existing?.datePostedIso,
               companyName: item.companyName ?? existing?.companyName,
               salary: item.salary ?? existing?.salary,
-              shift: item.shift ?? existing?.shift,
-              experience: item.experience ?? existing?.experience,
-              workSetup: item.workSetup ?? existing?.workSetup,
+              shift,
+              experience,
+              workSetup,
               jobType: item.jobType ?? existing?.jobType,
               degree: item.degree ?? existing?.degree,
               techStack: item.techStack ?? existing?.techStack,
