@@ -13,7 +13,7 @@ A browser extension for Chrome and Firefox that enriches Indeed job listings wit
 - **Experience** — Years required, parsed from job descriptions
 - **Tech Stack** — Key technologies mentioned in the listing
 - **Benefits & Perks** — Retirement, insurance, and allowance signals
-- **Auto-Scan** — One-click batch scanner with a real-time progress bar; reads each card without opening new tabs
+
 - **Contextual Popup** — Settings only shown when on an Indeed feed; empty state on all other pages
 
 ---
@@ -106,10 +106,10 @@ pnpm run format
 nizviewer/
 ├── manifest.json            # Extension manifest (MV3)
 ├── background.js            # Service worker — opens features page on install
-├── content.js               # Main content script — badge rendering, auto-scan
+├── content.js               # Main content script — badge rendering
 ├── popup.html               # Extension popup
 ├── popup.js                 # Popup logic — settings, cache management
-├── styles.css               # Injected styles for badges, scan button
+├── styles.css               # Injected styles for badges
 ├── features.html            # Welcome / feature overview page
 ├── icons/                   # Extension icons (16, 48, 128px)
 └── scripts/

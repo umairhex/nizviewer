@@ -4,8 +4,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     const toggle = document.getElementById('toggleEnabled');
     const reloadNote = document.getElementById('reloadNote');
-    const scanLimitInput = document.getElementById('pref-scanLimit');
-    const scanIntervalInput = document.getElementById('pref-scanInterval');
+
     const mainContent = document.getElementById('mainContent');
     const emptyState = document.getElementById('emptyState');
     const cacheCountLabel = document.getElementById('cacheCountLabel');
@@ -55,8 +54,7 @@
           t.checked = prefs[prefKey] !== false;
         });
 
-        if (scanLimitInput) scanLimitInput.value = prefs.scanLimit ?? 5;
-        if (scanIntervalInput) scanIntervalInput.value = prefs.scanInterval ?? 1500;
+
 
         if (cacheCountLabel) {
           const count = res.nizViewerCache ? Object.keys(res.nizViewerCache).length : 0;
@@ -146,21 +144,6 @@
       });
     }
 
-    if (scanLimitInput) {
-      scanLimitInput.addEventListener('change', () => {
-        const val = Math.max(0, parseInt(scanLimitInput.value, 10) || 0);
-        scanLimitInput.value = val;
-        updatePref('scanLimit', val);
-      });
-    }
-
-    if (scanIntervalInput) {
-      scanIntervalInput.addEventListener('change', () => {
-        const val = Math.max(500, parseInt(scanIntervalInput.value, 10) || 1500);
-        scanIntervalInput.value = val;
-        updatePref('scanInterval', val);
-      });
-    }
 
     toggle.addEventListener('change', async () => {
       const isEnabled = toggle.checked;

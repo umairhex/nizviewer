@@ -12,7 +12,6 @@ var DEFAULT_BADGE_PREFS = {
   perks: true,
   ageLimit: true,
   gender: true,
-  scanLimit: 5,
-  scanInterval: 1500,
+
   theme: 'nizviewer',
 };

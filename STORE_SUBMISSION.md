@@ -175,7 +175,7 @@ pnpm run build:chrome && pnpm run build:firefox
 
 - [ ] `pnpm run lint` passes with zero errors
 - [ ] Popup opens on an Indeed search feed and shows the correct job count
-- [ ] Auto-Scan completes without opening new tabs
+
 - [ ] Badge freshness dates are correct
 - [ ] `manifest.json` version matches `package.json`
 - [ ] Icons exist at 16, 48, and 128px

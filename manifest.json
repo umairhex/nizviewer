@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NizViewer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Advanced Indeed Job Data Viewer",
   "author": "NizViewer",
   "homepage_url": "https://github.com/umairhex/nizviewer",
