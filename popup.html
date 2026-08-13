@@ -1,335 +1,437 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NizViewer</title>
-  <style>
-    :root {
-      --canvas: #fafafa;
-      --elevated: #ffffff;
-      --ink: #171717;
-      --body: #4d4d4d;
-      --mute: #8f8f8f;
-      --hairline: #ebebeb;
-      --link: #0070f3;
-      --error: #e53e3e;
-      --rounded-sm: 6px;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NizViewer</title>
+    <style>
+      :root {
+        --canvas: #fafafa;
+        --elevated: #ffffff;
+        --ink: #171717;
+        --body: #4d4d4d;
+        --mute: #8f8f8f;
+        --hairline: #ebebeb;
+        --link: #0070f3;
+        --error: #e53e3e;
+        --rounded-sm: 6px;
+      }
 
-    body {
-      width: 360px;
-      margin: 0;
-      padding: 16px;
-      font-family: "Geist Sans", "Inter", -apple-system, sans-serif;
-      background-color: var(--canvas);
-      color: var(--ink);
-      box-sizing: border-box;
-    }
+      body {
+        width: 360px;
+        margin: 0;
+        padding: 16px;
+        font-family:
+          'Geist Sans',
+          'Inter',
+          -apple-system,
+          sans-serif;
+        background-color: var(--canvas);
+        color: var(--ink);
+        box-sizing: border-box;
+      }
 
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 24px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--hairline);
-    }
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--hairline);
+      }
 
-    .header img {
-      width: 24px;
-      height: 24px;
-      border-radius: 4px;
-    }
+      .header img {
+        width: 24px;
+        height: 24px;
+        border-radius: 4px;
+      }
 
-    .header h1 {
-      font-size: 16px;
-      font-weight: 600;
-      margin: 0;
-      letter-spacing: -0.4px;
-    }
+      .header h1 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: -0.4px;
+      }
 
-    .section-eyebrow {
-      font-family: "Geist Mono", "JetBrains Mono", monospace;
-      font-size: 11px;
-      font-weight: 500;
-      text-transform: uppercase;
-      color: var(--mute);
-      margin: 0 0 8px 4px;
-      letter-spacing: 0.5px;
-    }
+      .section-eyebrow {
+        font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+        font-size: 11px;
+        font-weight: 500;
+        text-transform: uppercase;
+        color: var(--mute);
+        margin: 0 0 8px 4px;
+        letter-spacing: 0.5px;
+      }
 
-    .card {
-      background-color: var(--elevated);
-      border: 1px solid var(--hairline);
-      border-radius: var(--rounded-sm);
-      padding: 12px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-    }
+      .card {
+        background-color: var(--elevated);
+        border: 1px solid var(--hairline);
+        border-radius: var(--rounded-sm);
+        padding: 12px;
+        margin-bottom: 16px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+      }
 
-    .control-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-    }
+      .control-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+      }
 
-    .control-row:not(:last-child) {
-      border-bottom: 1px solid var(--hairline);
-    }
+      .control-row:not(:last-child) {
+        border-bottom: 1px solid var(--hairline);
+      }
 
-    .label {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--ink);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 55%;
-    }
+      .label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--ink);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 55%;
+      }
 
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 32px;
-      height: 18px;
-    }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: var(--hairline);
-      transition: .2s;
-      border-radius: var(--rounded-sm); /* Square switches */
-    }
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 14px;
-      width: 14px;
-      left: 2px;
-      bottom: 2px;
-      background-color: white;
-      transition: .2s;
-      border-radius: 4px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-    input:checked + .slider {
-      background-color: var(--ink);
-    }
-    input:checked + .slider:before {
-      transform: translateX(14px);
-    }
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 32px;
+        height: 18px;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--hairline);
+        transition: 0.2s;
+        border-radius: var(--rounded-sm); /* Square switches */
+      }
+      .slider:before {
+        position: absolute;
+        content: '';
+        height: 14px;
+        width: 14px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        transition: 0.2s;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      }
+      input:checked + .slider {
+        background-color: var(--ink);
+      }
+      input:checked + .slider:before {
+        transform: translateX(14px);
+      }
 
-    select, input[type="number"] {
-      background-color: var(--elevated);
-      border: 1px solid var(--hairline);
-      border-radius: var(--rounded-sm);
-      color: var(--ink);
-      font-family: inherit;
-      font-size: 12px;
-      padding: 6px 8px;
-      width: 130px;
-      outline: none;
-    }
-    
-    select:focus, input[type="number"]:focus {
-      border-color: var(--link);
-      box-shadow: 0 0 0 1px var(--link);
-    }
+      select,
+      input[type='number'] {
+        background-color: var(--elevated);
+        border: 1px solid var(--hairline);
+        border-radius: var(--rounded-sm);
+        color: var(--ink);
+        font-family: inherit;
+        font-size: 12px;
+        padding: 6px 8px;
+        width: 130px;
+        outline: none;
+      }
 
-    #reloadNote {
-      font-size: 11px;
-      color: var(--error);
-      display: none;
-      text-align: center;
-      margin-bottom: 12px;
-      font-weight: 500;
-    }
-    
-    .ghost-btn {
-      background: transparent;
-      border: 1px solid var(--hairline);
-      color: var(--ink);
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .ghost-btn:hover {
-      background: var(--hairline);
-    }
-    .danger-btn {
-      color: #e53e3e;
-      border-color: #fc8181;
-    }
-    .danger-btn:hover {
-      background: #fff5f5;
-    }
+      select:focus,
+      input[type='number']:focus {
+        border-color: var(--link);
+        box-shadow: 0 0 0 1px var(--link);
+      }
 
-    #emptyState {
-      display: block; /* shown by default until tab check resolves */
-      text-align: center;
-      padding: 32px 16px;
-      color: var(--mute);
-      font-size: 13px;
-      line-height: 1.4;
-    }
-    #mainContent {
-      display: none;
-    }
+      #reloadNote {
+        font-size: 11px;
+        color: var(--error);
+        display: none;
+        text-align: center;
+        margin-bottom: 12px;
+        font-weight: 500;
+      }
 
-    .footer {
-      text-align: center;
-      font-size: 11px;
-      color: var(--mute);
-      margin-top: 16px;
-    }
-    
-    .switch input:focus-visible + .slider {
-      box-shadow: 0 0 0 2px var(--canvas), 0 0 0 4px var(--ink);
-    }
-  </style>
-</head>
-<body>
+      .ghost-btn {
+        background: transparent;
+        border: 1px solid var(--hairline);
+        color: var(--ink);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .ghost-btn:hover {
+        background: var(--hairline);
+      }
+      .danger-btn {
+        color: #e53e3e;
+        border-color: #fc8181;
+      }
+      .danger-btn:hover {
+        background: #fff5f5;
+      }
 
-  <div class="header">
-    <img src="icons/icon48.png" alt="NizViewer">
-    <h1>NizViewer <span style="font-size:10px; font-weight:400; color:var(--mute); letter-spacing:0; font-family:monospace;">v1.3.0</span></h1>
-    <div style="flex-grow: 1;"></div>
-    <span style="font-size:11px; color:var(--mute); margin-right:6px;">Enabled</span>
-    <label class="switch">
-      <input type="checkbox" id="toggleEnabled" aria-label="Enable NizViewer">
-      <span class="slider"></span>
-    </label>
-  </div>
+      #emptyState {
+        display: block; /* shown by default until tab check resolves */
+        text-align: center;
+        padding: 32px 16px;
+        color: var(--mute);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      #mainContent {
+        display: none;
+      }
 
-  <div id="reloadNote"></div>
+      .footer {
+        text-align: center;
+        font-size: 11px;
+        color: var(--mute);
+        margin-top: 16px;
+      }
 
-  <div id="emptyState">
-    <div style="font-size: 24px; margin-bottom: 8px;">🧭</div>
-    Please navigate to an <strong>Indeed search feed</strong> to use NizViewer.
-  </div>
+      .switch input:focus-visible + .slider {
+        box-shadow:
+          0 0 0 2px var(--canvas),
+          0 0 0 4px var(--ink);
+      }
 
-  <div id="mainContent">
-    <div class="section-eyebrow">Configuration</div>
-    <div class="card">
-      <div class="control-row">
-        <span class="label">Auto-Scan Limit</span>
-        <div>
-          <input type="number" id="pref-scanLimit" min="0" style="width: 100px;">
-          <div style="font-size: 10px; color: var(--mute); margin-top: 4px; text-align: right;">0 for unlimited</div>
+      .popup-btn-icon {
+        width: 13px;
+        height: 13px;
+        vertical-align: -2px;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <img src="icons/icon48.png" alt="NizViewer" />
+      <h1>
+        NizViewer
+        <span
+          style="
+            font-size: 10px;
+            font-weight: 400;
+            color: var(--mute);
+            letter-spacing: 0;
+            font-family: monospace;
+          "
+          >v1.3.0</span
+        >
+      </h1>
+      <div style="flex-grow: 1"></div>
+      <span style="font-size: 11px; color: var(--mute); margin-right: 6px">Enabled</span>
+      <label class="switch">
+        <input type="checkbox" id="toggleEnabled" aria-label="Enable NizViewer" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div id="reloadNote"></div>
+
+    <div id="emptyState">
+      <img
+        src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23334155%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Cpath%20d%3D%22m15.5%208.5-2.2%205.8-5.8%202.2%202.2-5.8%205.8-2.2Z%22%2F%3E%3C%2Fsvg%3E"
+        alt="NizViewer"
+        style="width: 24px; height: 24px; margin-bottom: 8px"
+      />
+      Please navigate to an <strong>Indeed search feed</strong> to use NizViewer.
+    </div>
+
+    <div id="mainContent">
+      <div class="section-eyebrow">Configuration</div>
+      <div class="card">
+        <div class="control-row">
+          <span class="label">Auto-Scan Limit</span>
+          <div>
+            <input type="number" id="pref-scanLimit" min="0" style="width: 100px" />
+            <div style="font-size: 10px; color: var(--mute); margin-top: 4px; text-align: right">
+              0 for unlimited
+            </div>
+          </div>
+        </div>
+        <div class="control-row">
+          <span class="label">Scan Speed</span>
+          <select id="pref-scanInterval" style="width: 118px">
+            <option value="1000">Fast (1.0s)</option>
+            <option value="1500">Normal (1.5s)</option>
+            <option value="2000">Safe (2.0s)</option>
+            <option value="3000">Conservative (3.0s)</option>
+          </select>
         </div>
       </div>
-      <div class="control-row">
-        <span class="label">Scan Speed</span>
-        <select id="pref-scanInterval" style="width: 118px;">
-          <option value="1000">Fast (1.0s)</option>
-          <option value="1500">Normal (1.5s)</option>
-          <option value="2000">Safe (2.0s)</option>
-          <option value="3000">Conservative (3.0s)</option>
-        </select>
+
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          margin-bottom: 8px;
+        "
+      >
+        <div class="section-eyebrow" style="margin-bottom: 0">Data Extraction</div>
+        <div>
+          <button class="ghost-btn" id="btnSelectAll" style="padding: 2px 6px; font-size: 10px">
+            All
+          </button>
+          <button
+            class="ghost-btn"
+            id="btnSelectNone"
+            style="padding: 2px 6px; font-size: 10px; margin-left: 4px"
+          >
+            None
+          </button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="control-row">
+          <span class="label">Salary & Comp</span>
+          <label class="switch">
+            <input type="checkbox" class="pref-toggle" data-pref="salary" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="control-row">
+          <span class="label">Shift Schedule</span>
+          <label class="switch">
+            <input type="checkbox" class="pref-toggle" data-pref="shift" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="control-row">
+          <span class="label">Work Setup</span>
+          <label class="switch">
+            <input type="checkbox" class="pref-toggle" data-pref="workSetup" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="control-row">
+          <span class="label">Experience Req</span>
+          <label class="switch">
+            <input type="checkbox" class="pref-toggle" data-pref="experience" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="control-row">
+          <span class="label">Job Type</span>
+          <label class="switch">
+            <input type="checkbox" class="pref-toggle" data-pref="jobType" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="control-row">
+          <span class="label">Education & Degree</span>
+          <label class="switch">
+            <input type="checkbox" class="pref-toggle" data-pref="degree" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="control-row">
+          <span class="label">Tech Stack</span>
+          <label class="switch">
+            <input type="checkbox" class="pref-toggle" data-pref="techStack" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="control-row">
+          <span class="label">Benefits</span>
+          <label class="switch">
+            <input type="checkbox" class="pref-toggle" data-pref="benefits" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="control-row">
+          <span class="label">Allowances & Perks</span>
+          <label class="switch">
+            <input type="checkbox" class="pref-toggle" data-pref="perks" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="control-row">
+          <span class="label">Age Limits</span>
+          <label class="switch">
+            <input type="checkbox" class="pref-toggle" data-pref="ageLimit" />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="control-row">
+          <span class="label">Gender Specifics</span>
+          <label class="switch">
+            <input type="checkbox" class="pref-toggle" data-pref="gender" />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="section-eyebrow">Data Management</div>
+      <div class="card">
+        <div class="control-row">
+          <span class="label" id="cacheCountLabel">0 jobs cached</span>
+          <button class="ghost-btn danger-btn" id="btnClearCache">Clear Data</button>
+        </div>
       </div>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
-      <div class="section-eyebrow" style="margin-bottom: 0;">Data Extraction</div>
-      <div>
-        <button class="ghost-btn" id="btnSelectAll" style="padding: 2px 6px; font-size: 10px;">All</button>
-        <button class="ghost-btn" id="btnSelectNone" style="padding: 2px 6px; font-size: 10px; margin-left: 4px;">None</button>
+    <div class="footer">
+      <div style="margin-bottom: 8px">
+        <a
+          href="https://github.com/umairhex"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="color: var(--ink); text-decoration: none; margin: 0 4px"
+          >GitHub</a
+        >
+        &bull;
+        <a
+          href="https://www.linkedin.com/in/umairhex"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="color: var(--ink); text-decoration: none; margin: 0 4px"
+          >LinkedIn</a
+        >
+        &bull;
+        <a
+          href="https://umairrx.dev"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="color: var(--ink); text-decoration: none; margin: 0 4px"
+          >Portfolio</a
+        >
+      </div>
+      <div style="margin-bottom: 8px">
+        <a
+          href="https://twitter.com/umairhex"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="color: var(--mute); text-decoration: none; margin: 0 4px"
+          >Twitter</a
+        >
+        &bull;
+        <a
+          href="https://www.instagram.com/umairhex"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="color: var(--mute); text-decoration: none; margin: 0 4px"
+          >Instagram</a
+        >
       </div>
     </div>
-    <div class="card">
-    <div class="control-row">
-      <span class="label">Salary & Comp</span>
-      <label class="switch">
-        <input type="checkbox" class="pref-toggle" data-pref="salary">
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="control-row">
-      <span class="label">Shift Schedule</span>
-      <label class="switch">
-        <input type="checkbox" class="pref-toggle" data-pref="jobType">
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="control-row">
-      <span class="label">Work Setup</span>
-      <label class="switch">
-        <input type="checkbox" class="pref-toggle" data-pref="workSetup">
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="control-row">
-      <span class="label">Experience Req</span>
-      <label class="switch">
-        <input type="checkbox" class="pref-toggle" data-pref="degree">
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="control-row">
-      <span class="label">Tech Stack</span>
-      <label class="switch">
-        <input type="checkbox" class="pref-toggle" data-pref="techStack">
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="control-row">
-      <span class="label">Benefits</span>
-      <label class="switch">
-        <input type="checkbox" class="pref-toggle" data-pref="benefits">
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="control-row">
-      <span class="label">Allowances & Perks</span>
-      <label class="switch">
-        <input type="checkbox" class="pref-toggle" data-pref="perks">
-        <span class="slider"></span>
-      </label>
-    </div>
-    <div class="control-row">
-      <span class="label">Age Limits</span>
-      <label class="switch">
-        <input type="checkbox" class="pref-toggle" data-pref="ageLimit">
-        <span class="slider"></span>
-      </label>
-    </div>
-      <div class="control-row">
-        <span class="label">Gender Specifics</span>
-        <label class="switch">
-          <input type="checkbox" class="pref-toggle" data-pref="gender">
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-    
-    <div class="section-eyebrow">Data Management</div>
-    <div class="card">
-      <div class="control-row">
-        <span class="label" id="cacheCountLabel">0 jobs cached</span>
-        <button class="ghost-btn danger-btn" id="btnClearCache">Clear Data</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer">
-    <div style="margin-bottom: 8px;">
-      <a href="https://github.com/umairhex" target="_blank" rel="noopener noreferrer" style="color: var(--ink); text-decoration: none; margin: 0 4px;">GitHub</a> &bull;
-      <a href="https://www.linkedin.com/in/umairhex" target="_blank" rel="noopener noreferrer" style="color: var(--ink); text-decoration: none; margin: 0 4px;">LinkedIn</a> &bull;
-      <a href="https://umairrx.dev" target="_blank" rel="noopener noreferrer" style="color: var(--ink); text-decoration: none; margin: 0 4px;">Portfolio</a>
-    </div>
-    <div style="margin-bottom: 8px;">
-      <a href="https://twitter.com/umairhex" target="_blank" rel="noopener noreferrer" style="color: var(--mute); text-decoration: none; margin: 0 4px;">Twitter</a> &bull;
-      <a href="https://www.instagram.com/umairhex" target="_blank" rel="noopener noreferrer" style="color: var(--mute); text-decoration: none; margin: 0 4px;">Instagram</a>
-    </div>
-  </div>
-  <script src="scripts/browser-polyfill.js"></script>
-  <script src="popup.js"></script>
-</body>
+    <script src="scripts/browser-polyfill.js"></script>
+    <script src="scripts/icons.js"></script>
+    <script src="popup.js"></script>
+  </body>
 </html>

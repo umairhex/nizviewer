@@ -52,10 +52,10 @@ pnpm run lint
 
 # Build per-browser packages (same cross-browser manifest.json)
 pnpm run build:chrome
-# → web-ext-artifacts/nizviewer-1.0.0-chrome.zip
+# -> web-ext-artifacts/nizviewer-1.0.0-chrome.zip
 
 pnpm run build:firefox
-# → web-ext-artifacts/nizviewer-1.0.0-firefox.zip
+# -> web-ext-artifacts/nizviewer-1.0.0-firefox.zip
 ```
 
 ---
@@ -65,11 +65,13 @@ pnpm run build:firefox
 > **Important:** As of **August 31, 2026**, the Chrome Web Store no longer accepts MV2 extensions. NizViewer is already MV3-compliant.
 
 ### Key policy requirements (MV3)
+
 - All JavaScript must be bundled in the package — no remotely hosted code
 - Background context must be a **service worker** (no persistent background pages)
 - No `eval()` or dynamic code execution
 
 ### About `browser_specific_settings`
+
 The `browser_specific_settings` key in `manifest.json` is a Firefox-only field. Chrome does **not** recognise it but treats it as an unrecognised key — this shows an informational **warning** in the developer dashboard only. It does **not** block publication.
 
 If you prefer a clean build, `pnpm run build:chrome` and `pnpm run build:firefox` package the same cross-browser `manifest.json`: Firefox uses `background.scripts`, Chrome uses `background.service_worker` (Chrome 121+ ignores the extra key), and Chrome shows only an informational warning for `browser_specific_settings`.
@@ -88,6 +90,7 @@ If you prefer a clean build, `pnpm run build:chrome` and `pnpm run build:firefox
 6. Submit for review
 
 **Review timeline:**
+
 - Simple changes: a few hours to a few days
 - New extensions or broad permission changes: up to several weeks
 - If waiting > 3 weeks, contact support via the dashboard — do **not** cancel and resubmit (it resets your queue position)
@@ -133,7 +136,7 @@ NizViewer already includes this block.
 ### Submission — Listed (recommended)
 
 1. Go to [Firefox Add-on Developer Hub](https://addons.mozilla.org/developers/)
-2. Click **Submit a New Add-on → On this site**
+2. Click **Submit a New Add-on -> On this site**
 3. Upload `web-ext-artifacts/nizviewer-1.0.0-firefox.zip`
 4. When prompted for source code, upload the same zip (it is already unminified — satisfies AMO's source requirement)
 5. Category: **Search Tools**
@@ -152,18 +155,18 @@ NizViewer already includes this block.
 
 Bump the version in **three places** before each release:
 
-| File | Field |
-|------|-------|
-| `manifest.json` | `"version": "1.0.0"` |
-| `package.json` | `"version": "1.0.0"` |
-| `popup.html` | `v1.x.x` in the header `<span>` |
+| File            | Field                           |
+| --------------- | ------------------------------- |
+| `manifest.json` | `"version": "1.0.0"`            |
+| `package.json`  | `"version": "1.0.0"`            |
+| `popup.html`    | `v1.x.x` in the header `<span>` |
 
 Then rebuild:
 
 ```bash
 pnpm run build:chrome && pnpm run build:firefox
-# → web-ext-artifacts/nizviewer-<version>-chrome.zip
-# → web-ext-artifacts/nizviewer-<version>-firefox.zip
+# -> web-ext-artifacts/nizviewer-<version>-chrome.zip
+# -> web-ext-artifacts/nizviewer-<version>-firefox.zip
 ```
 
 ---
@@ -174,7 +177,6 @@ pnpm run build:chrome && pnpm run build:firefox
 - [ ] Popup opens on an Indeed search feed and shows the correct job count
 - [ ] Auto-Scan completes without opening new tabs
 - [ ] Badge freshness dates are correct
-- [ ] Filter bar appears and filters correctly
 - [ ] `manifest.json` version matches `package.json`
 - [ ] Icons exist at 16, 48, and 128px
 - [ ] No `console.log` or debug output in production files

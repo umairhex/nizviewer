@@ -8,11 +8,9 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "nizviewer@umairhex.github.io",
-      "strict_min_version": "128.0",
+      "strict_min_version": "142.0",
       "data_collection_permissions": {
-        "required": [
-          "none"
-        ]
+        "required": ["none"]
       }
     }
   },
@@ -60,25 +58,19 @@
       ],
       "js": [
         "scripts/browser-polyfill.js",
+        "scripts/icons.js",
         "scripts/techKeywords.js",
         "content.js"
       ],
-      "css": [
-        "styles.css"
-      ],
+      "css": ["styles.css"],
       "run_at": "document_start",
       "all_frames": false
     }
   ],
-  "permissions": [
-    "storage"
-  ],
+  "permissions": ["storage"],
   "web_accessible_resources": [
     {
-      "resources": [
-        "scripts/pageHook.js",
-        "styles.css"
-      ],
+      "resources": ["scripts/pageHook.js", "styles.css"],
       "matches": [
         "*://*.indeed.com/*",
         "*://*.indeed.ca/*",

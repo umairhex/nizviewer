@@ -1,12 +1,12 @@
-"use strict";
+'use strict';
 (() => {
   function getFreshnessTier(daysAgo) {
     if (daysAgo <= 7) {
-      return "fresh";
+      return 'fresh';
     } else if (daysAgo <= 14) {
-      return "recent";
+      return 'recent';
     } else {
-      return "old";
+      return 'old';
     }
   }
   var storage = browserApi.storage;
@@ -17,106 +17,159 @@
   function injectHook() {
     if (hookInjected) return;
     try {
-      const s = document.createElement("script");
-      s.src = rt.getURL("scripts/pageHook.js");
+      const s = document.createElement('script');
+      s.src = rt.getURL('scripts/pageHook.js');
       s.onload = () => {
         s.remove();
         hookInjected = true;
       };
-      s.onerror = () => {
-      };
+      s.onerror = () => {};
       (document.head || document.documentElement).appendChild(s);
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   if (document.head || document.documentElement) {
     injectHook();
   } else {
-    document.addEventListener("DOMContentLoaded", injectHook, { once: true });
+    document.addEventListener('DOMContentLoaded', injectHook, { once: true });
   }
-  window.addEventListener("popstate", () => {
+  window.addEventListener('popstate', () => {
     hookInjected = false;
     injectHook();
   });
   var SELECTORS = {
-    jobCardLink: "a[data-jk]",
-    jobListContainer: "#mosaic-provider-jobcards",
-    activeLink: 'a[data-jk][aria-pressed="true"]'
+    jobCardLink: 'a[data-jk]',
+    jobListContainer: '#mosaic-provider-jobcards',
+    activeLink: 'a[data-jk][aria-pressed="true"]',
   };
-  const CACHE_KEY = "nizViewerCache";
+  const CACHE_KEY = 'nizViewerCache';
   const CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
   let cache = {};
   let badgePrefs = { ...DEFAULT_BADGE_PREFS };
-  let activeFilters = new Set();
-  
+
   function classifyShift(text) {
     if (!text || text.length < 3) return void 0;
     const t = text.toLowerCase();
     const shiftLabelM = t.match(/\b(?:shift|schedule|working\s+hours)[\s\-:]*([^.,\n]{3,40})/i);
     if (shiftLabelM) {
       const val = shiftLabelM[1].trim();
-      if (val.includes("mid") && val.includes("night")) return "Mid to Night Shift";
-      if (val.includes("night") || val.includes("graveyard") || val.includes("overnight") || val.includes("us hours")) return "Night Shift";
-      if (val.includes("day") || val.includes("morning")) return "Day Shift";
-      if (val.includes("evening") || val.includes("afternoon") || val.includes("mid")) return "Mid Shift";
-      if (val.includes("rotating") || val.includes("rotation")) return "Rotating Shift";
+      if (val.includes('mid') && val.includes('night')) return 'Mid to Night Shift';
+      if (
+        val.includes('night') ||
+        val.includes('graveyard') ||
+        val.includes('overnight') ||
+        val.includes('us hours')
+      )
+        return 'Night Shift';
+      if (val.includes('day') || val.includes('morning')) return 'Day Shift';
+      if (val.includes('evening') || val.includes('afternoon') || val.includes('mid'))
+        return 'Mid Shift';
+      if (val.includes('rotating') || val.includes('rotation')) return 'Rotating Shift';
     }
-    if (/\bmid[\s-]*to[\s-]*night[\s-]*shifts?\b/.test(t) || /\bmid[\s-]*shifts?\b/.test(t)) return "Mid to Night Shift";
-    if (/\bnight[\s-]*shifts?\b/i.test(t) || /\bnight[\s-]*schedules?\b/i.test(t) || /\bnight[\s-]*hours\b/i.test(t) || /\bnight[\s-]*work\b/i.test(t) || /\bgraveyard\b/.test(t) || /\bovernight\b/.test(t) || /\bus[\s-]*hours\b/.test(t)) return "Night Shift";
-    if (/\bday[\s-]*shifts?\b/i.test(t) || /\bday[\s-]*schedules?\b/i.test(t) || /\bmorning[\s-]*shifts?\b/.test(t)) return "Day Shift";
-    if (/\bevening[\s-]*shifts?\b/.test(t) || /\bafternoon[\s-]*shifts?\b/i.test(t) || /\bmid[\s-]*shifts?\b/i.test(t)) return "Mid Shift";
-    if (/\brotating[\s-]*shifts?\b/.test(t) || /\bshift[\s-]*rotations?\b/.test(t)) return "Rotating Shift";
-    if (/\bswing[\s-]*shifts?\b/.test(t)) return "Swing Shift";
-    const tm = t.match(/(\d{1,2})(?::\d{2})?\s*(am|pm)?\s*(?:to|[-–—])\s*(\d{1,2})(?::\d{2})?\s*(am|pm)?/i);
+    if (/\bmid[\s-]*to[\s-]*night[\s-]*shifts?\b/.test(t) || /\bmid[\s-]*shifts?\b/.test(t))
+      return 'Mid to Night Shift';
+    if (
+      /\bnight[\s-]*shifts?\b/i.test(t) ||
+      /\bnight[\s-]*schedules?\b/i.test(t) ||
+      /\bnight[\s-]*hours\b/i.test(t) ||
+      /\bnight[\s-]*work\b/i.test(t) ||
+      /\bgraveyard\b/.test(t) ||
+      /\bovernight\b/.test(t) ||
+      /\bus[\s-]*hours\b/.test(t)
+    )
+      return 'Night Shift';
+    if (
+      /\bday[\s-]*shifts?\b/i.test(t) ||
+      /\bday[\s-]*schedules?\b/i.test(t) ||
+      /\bmorning[\s-]*shifts?\b/.test(t)
+    )
+      return 'Day Shift';
+    if (
+      /\bevening[\s-]*shifts?\b/.test(t) ||
+      /\bafternoon[\s-]*shifts?\b/i.test(t) ||
+      /\bmid[\s-]*shifts?\b/i.test(t)
+    )
+      return 'Mid Shift';
+    if (/\brotating[\s-]*shifts?\b/.test(t) || /\bshift[\s-]*rotations?\b/.test(t))
+      return 'Rotating Shift';
+    if (/\bswing[\s-]*shifts?\b/.test(t)) return 'Swing Shift';
+    const tm = t.match(
+      /(\d{1,2})(?::\d{2})?\s*(am|pm)?\s*(?:to|[-–—])\s*(\d{1,2})(?::\d{2})?\s*(am|pm)?/i,
+    );
     if (tm) {
       const hasMeridiem = !!(tm[2] || tm[4]);
       const idx = tm.index || 0;
-      const hasContext = /\b(?:hours|schedule|work|between|time|shift|business)\b/i.test(t.substring(Math.max(0, idx - 20), idx + 20));
+      const hasContext = /\b(?:hours|schedule|work|between|time|shift|business)\b/i.test(
+        t.substring(Math.max(0, idx - 20), idx + 20),
+      );
       if (hasMeridiem || hasContext) {
-        let sH = parseInt(tm[1], 10), eH = parseInt(tm[3], 10);
-        const sM = (tm[2] || "").toLowerCase(), eM = (tm[4] || "").toLowerCase();
-        if (sM === "pm" && sH < 12) sH += 12;
-        if (sM === "am" && sH === 12) sH = 0;
-        if (eM === "pm" && eH < 12) eH += 12;
-        if (eM === "am" && eH === 12) eH = 0;
-        if (sH >= 18 || sH <= 4 || eH >= 0 && eH <= 8 && sH > eH) return "Night Shift";
-        if (sH >= 6 && sH <= 10 && eH >= 14 && eH <= 19) return "Day Shift";
-        if (sH >= 12 && sH <= 16) return "Mid Shift";
+        let sH = parseInt(tm[1], 10),
+          eH = parseInt(tm[3], 10);
+        const sM = (tm[2] || '').toLowerCase(),
+          eM = (tm[4] || '').toLowerCase();
+
+        if (!sM && !eM && sH >= 7 && sH <= 12 && eH <= 8 && eH < sH) {
+          eH += 12;
+        }
+
+        if (sM === 'pm' && sH < 12) sH += 12;
+        if (sM === 'am' && sH === 12) sH = 0;
+        if (eM === 'pm' && eH < 12) eH += 12;
+        if (eM === 'am' && eH === 12) eH = 0;
+
+        if (sH >= 18 || sH <= 4 || (eH >= 0 && eH <= 6 && sH > eH)) return 'Night Shift';
+        if (sH >= 6 && sH <= 10 && eH >= 14 && eH <= 19) return 'Day Shift';
+        if (sH >= 12 && sH <= 16) return 'Mid Shift';
       }
     }
-    if (/\bmidnight\b/.test(t) || /\bnocturnal\b/.test(t)) return "Night Shift";
-    if (/aligned\s+with\s+(?:us|u\.s\.|american|est|pst|cst|mst)\s+(?:business\s+)?hours/i.test(t)) return "Night Shift";
+    if (/\bmidnight\b/.test(t) || /\bnocturnal\b/.test(t)) return 'Night Shift';
+    if (/aligned\s+with\s+(?:us|u\.s\.|american|est|pst|cst|mst)\s+(?:business\s+)?hours/i.test(t))
+      return 'Night Shift';
     return void 0;
   }
 
   function parseDetailHtml(html) {
-    const rawText = html.replace(/<[^>]+>/g, " ").replace(/&[a-z#\d]+;/gi, " ");
-    const text = rawText.replace(/\s+/g, " ");
+    const rawText = html.replace(/<[^>]+>/g, ' ').replace(/&[a-z#\d]+;/gi, ' ');
+    const text = rawText.replace(/\s+/g, ' ');
     const shift = classifyShift(text);
     let workSetup;
-    if (/\b(?:permanent[\s-]+remote|remote|wfh|work[\s-]+from[\s-]+home|home[\s-]*based|remotely|virtual)\b/i.test(text)) {
-      workSetup = "Remote";
+    if (
+      /\b(?:permanent[\s-]+remote|remote|wfh|work[\s-]+from[\s-]+home|home[\s-]*based|remotely|virtual)\b/i.test(
+        text,
+      )
+    ) {
+      workSetup = 'Remote';
     } else if (/\b(?:hybrid|hyrbid|mixed|work[\s-]+from[\s-]+office)\b/i.test(text)) {
-      workSetup = "Hybrid";
+      workSetup = 'Hybrid';
     }
     if (!workSetup) {
-      const setupLabelM = text.match(/(?:Location|Set[\s-]?up|Arrangement|Work\s+Setup|Type|Working\s+Arrangement|Basis|Environment)[\s\-:]*([^.,\n]{3,40})/i);
+      const setupLabelM = text.match(
+        /(?:Location|Set[\s-]?up|Arrangement|Work\s+Setup|Type|Working\s+Arrangement|Basis|Environment)[\s\-:]*([^.,\n]{3,40})/i,
+      );
       if (setupLabelM) {
         const v = setupLabelM[1].toLowerCase();
-        if (v.includes("onsite") || v.includes("on-site") || v.includes("office") || v.includes("person") || v.includes("in-person")) workSetup = "Onsite";
+        if (
+          v.includes('onsite') ||
+          v.includes('on-site') ||
+          v.includes('office') ||
+          v.includes('person') ||
+          v.includes('in-person')
+        )
+          workSetup = 'Onsite';
       }
     }
     if (!workSetup) {
-      if (/\b(?:on[\s-]?site|in[\s-]*office|in[\s-]*person|onsite|on[\s-]*site)\b/i.test(text)) workSetup = "Onsite";
+      if (/\b(?:on[\s-]?site|in[\s-]*office|in[\s-]*person|onsite|on[\s-]*site)\b/i.test(text))
+        workSetup = 'Onsite';
     }
-    if (!workSetup && /\bno\s+remote\b/i.test(text)) workSetup = "Onsite";
+    if (!workSetup && /\bno\s+remote\b/i.test(text)) workSetup = 'Onsite';
     let experience;
     const yearNums = [];
     const rangePattern = /(\d+(?:\.\d+)?)\s*(?:to|[-–—])\s*(\d+(?:\.\d+)?)\s*(?:year|yr)s?/gi;
     for (const m of text.matchAll(rangePattern)) {
       yearNums.push(parseFloat(m[1]), parseFloat(m[2]));
     }
-    const orMorePattern = /(?:at\s+least|minimum\s+of|min)\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:or)?\s*more\s*(?:year|yr)s?/gi;
+    const orMorePattern =
+      /(?:at\s+least|minimum\s+of|min)\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:or)?\s*more\s*(?:year|yr)s?/gi;
     for (const m of text.matchAll(orMorePattern)) {
       const val = parseFloat(m[1] || m[2]);
       if (!isNaN(val)) yearNums.push(val);
@@ -128,12 +181,18 @@
       const start = Math.max(0, match.index - 80);
       const end = Math.min(text.length, match.index + 120);
       const context = text.substring(start, end).toLowerCase();
-      if (/\b(?:exp|experience|required|requirements|minimum|min|at\s+least|plus|prefer)\b/.test(context)) {
+      if (
+        /\b(?:exp|experience|required|requirements|minimum|min|at\s+least|plus|prefer)\b/.test(
+          context,
+        )
+      ) {
         yearNums.push(val);
       }
     }
     if (yearNums.length > 0) {
-      const valid = Array.from(new Set(yearNums.filter((n) => n >= 0.5 && n <= 25))).sort((a, b) => a - b);
+      const valid = Array.from(new Set(yearNums.filter((n) => n >= 0.5 && n <= 25))).sort(
+        (a, b) => a - b,
+      );
       if (valid.length > 0) {
         const min = valid[0];
         const max = valid[valid.length - 1];
@@ -141,69 +200,75 @@
       }
     }
     if (!experience && /entry[\s-]*level|no\s+experience|fresh\s*grad/i.test(text)) {
-      experience = "Entry Level";
+      experience = 'Entry Level';
     }
 
     let jobType;
-    if (/\b(?:full[\s-]*time|ft)\b/i.test(text)) jobType = "Full-time";
-    else if (/\b(?:part[\s-]*time|pt)\b/i.test(text)) jobType = "Part-time";
-    else if (/\b(?:contract|contractor|c2c|1099)\b/i.test(text)) jobType = "Contract";
-    else if (/\b(?:freelance|freelancer)\b/i.test(text)) jobType = "Freelance";
-    else if (/\bintern(?:ship)?\b/i.test(text)) jobType = "Internship";
+    if (/\b(?:full[\s-]*time|ft)\b/i.test(text)) jobType = 'Full-time';
+    else if (/\b(?:part[\s-]*time|pt)\b/i.test(text)) jobType = 'Part-time';
+    else if (/\b(?:contract|contractor|c2c|1099)\b/i.test(text)) jobType = 'Contract';
+    else if (/\b(?:freelance|freelancer)\b/i.test(text)) jobType = 'Freelance';
+    else if (/\bintern(?:ship)?\b/i.test(text)) jobType = 'Internship';
 
     let salary;
-    const salaryRegex = /(?:Rs|\$|£|€)\s*\d{1,3}(?:,\d{3})*(?:\.\d+)?(?:k|K)?(?:\s*(?:-|to)\s*(?:Rs|\$|£|€)?\s*\d{1,3}(?:,\d{3})*(?:\.\d+)?(?:k|K)?)?(?:\s*USD|\s*CAD|\s*EUR|\s*GBP)?\s*(?:a year|per year|annually|a month|per month|monthly|an hour|per hour|\/hr|\/yr|\/mo)/i;
+    const salaryRegex =
+      /(?:Rs|\$|£|€)\s*\d{1,3}(?:,\d{3})*(?:\.\d+)?(?:k|K)?(?:\s*(?:-|to)\s*(?:Rs|\$|£|€)?\s*\d{1,3}(?:,\d{3})*(?:\.\d+)?(?:k|K)?)?(?:\s*USD|\s*CAD|\s*EUR|\s*GBP)?\s*(?:a year|per year|annually|a month|per month|monthly|an hour|per hour|\/hr|\/yr|\/mo)/i;
     const salaryMatch = text.match(salaryRegex);
     if (salaryMatch) {
       salary = salaryMatch[0].trim();
     }
 
     let degree;
-    if (/\b(?:phd|doctorate|ph\.d)\b/i.test(text)) degree = "PhD";
+    if (/\b(?:phd|doctorate|ph\.d)\b/i.test(text)) degree = 'PhD';
     else if (/\b(?:master'?s?|ms|m\.s\.|mba|m\.b\.a\.)\b/i.test(text)) degree = "Master's";
-    else if (/\b(?:bachelor'?s?|bs|b\.s\.|ba|b\.a\.|b\.sc|beng)\b/i.test(text)) degree = "Bachelor's";
+    else if (/\b(?:bachelor'?s?|bs|b\.s\.|ba|b\.a\.|b\.sc|beng)\b/i.test(text))
+      degree = "Bachelor's";
     else if (/\b(?:associate'?s?|aa|a\.a\.|as|a\.s\.)\b/i.test(text)) degree = "Associate's";
-    else if (/\b(?:diploma|high school|ged)\b/i.test(text)) degree = "Diploma";
+    else if (/\b(?:diploma|high school|ged)\b/i.test(text)) degree = 'Diploma';
 
     let techStack;
     const foundTechs = new Set();
-    const keywordsToUse = typeof TECH_KEYWORDS !== 'undefined' ? TECH_KEYWORDS : [];
-    
-    for (const tech of keywordsToUse) {
-      if (tech.length === 1 && tech !== 'C' && tech !== 'R') continue;
-      
-      const escapedTech = tech.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const isCaseSensitive = tech.length <= 2 || ['Go', 'Dart', 'Chef', 'Puppet', 'Make'].includes(tech);
-      const flags = isCaseSensitive ? '' : 'i';
-      
-      const regex = new RegExp(`(?:^|\\W)${escapedTech}(?:$|\\W)`, flags);
+    const regexList = getCompiledTechRegexes();
+    for (const { tech, regex } of regexList) {
       if (regex.test(text)) {
         if (tech === 'C' && /(?:^|\W)C-(?:level|suite)/i.test(text)) continue;
         if (tech === 'R' && /(?:^|\W)R&D(?:$|\W)/i.test(text)) continue;
-        
         foundTechs.add(tech);
       }
     }
     if (foundTechs.size > 0) {
-      techStack = Array.from(foundTechs).join(", ");
+      techStack = Array.from(foundTechs).join(', ');
     }
 
     let benefits;
-    if (/\b(?:eobi|provident fund|gratuity|pf)\b/i.test(text)) benefits = "EOBI / PF";
+    if (/\b(?:eobi|provident fund|gratuity|pf)\b/i.test(text)) benefits = 'EOBI / PF';
 
     let perks;
-    if (/\b(?:pick and drop|transport allowance|fuel allowance|mobile allowance)\b/i.test(text)) perks = "Allowances";
+    if (/\b(?:pick and drop|transport allowance|fuel allowance|mobile allowance)\b/i.test(text))
+      perks = 'Allowances';
 
     let ageLimit;
     const ageMatch = text.match(/(?:max|maximum)\s*age(?: limit)?\s*(?:is)?\s*(\d{2})/i);
     if (ageMatch) ageLimit = `Max Age: ${ageMatch[1]}`;
 
     let gender;
-    if (/\b(?:females? encouraged|female staff)\b/i.test(text)) gender = "Females Encouraged";
-    else if (/\bmales? only\b/i.test(text)) gender = "Males Only";
-    else if (/\bfemales? only\b/i.test(text)) gender = "Females Only";
+    if (/\b(?:females? encouraged|female staff)\b/i.test(text)) gender = 'Females Encouraged';
+    else if (/\bmales? only\b/i.test(text)) gender = 'Males Only';
+    else if (/\bfemales? only\b/i.test(text)) gender = 'Females Only';
 
-    return { shift, experience, workSetup, jobType, degree, techStack, salary, benefits, perks, ageLimit, gender };
+    return {
+      shift,
+      experience,
+      workSetup,
+      jobType,
+      degree,
+      techStack,
+      salary,
+      benefits,
+      perks,
+      ageLimit,
+      gender,
+    };
   }
   function debounce(fn, ms) {
     let t;
@@ -214,28 +279,56 @@
   }
   async function loadData() {
     try {
-      const localRes = await storage.local.get([CACHE_KEY, "extensionEnabled", "badgePrefs"]);
+      const localRes = await storage.local.get([CACHE_KEY, 'extensionEnabled', 'badgePrefs']);
       if (localRes?.[CACHE_KEY]) cache = localRes[CACHE_KEY];
-      if (typeof localRes?.extensionEnabled === "boolean") extensionEnabled = localRes.extensionEnabled;
+      if (typeof localRes?.extensionEnabled === 'boolean')
+        extensionEnabled = localRes.extensionEnabled;
       if (localRes?.badgePrefs) badgePrefs = { ...badgePrefs, ...localRes.badgePrefs };
-    } catch {
-    }
+    } catch {}
   }
+  let compiledTechRegexes = null;
+  function getCompiledTechRegexes() {
+    if (!compiledTechRegexes) {
+      const list = typeof TECH_KEYWORDS !== 'undefined' ? TECH_KEYWORDS : [];
+      compiledTechRegexes = list
+        .map((tech) => {
+          if (tech.length === 1 && tech !== 'C' && tech !== 'R') return null;
+          const escapedTech = tech.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const isCaseSensitive =
+            tech.length <= 2 || ['Go', 'Dart', 'Chef', 'Puppet', 'Make'].includes(tech);
+          const flags = isCaseSensitive ? '' : 'i';
+          return { tech, regex: new RegExp(`(?:^|\\W)${escapedTech}(?:$|\\W)`, flags) };
+        })
+        .filter(Boolean);
+    }
+    return compiledTechRegexes;
+  }
+
+  let saveDebounceTimer = null;
   async function saveData() {
-    try {
-      const localRes = await storage.local.get([CACHE_KEY]);
-      if (localRes?.[CACHE_KEY]) {
-        cache = { ...localRes[CACHE_KEY], ...cache };
+    if (saveDebounceTimer) clearTimeout(saveDebounceTimer);
+    saveDebounceTimer = setTimeout(async () => {
+      try {
+        const localRes = await storage.local.get([CACHE_KEY]);
+        if (localRes?.[CACHE_KEY]) {
+          cache = { ...localRes[CACHE_KEY], ...cache };
+        }
+        await storage.local.set({ [CACHE_KEY]: cache });
+      } catch (err) {
+        console.error(`[NizViewer Storage] Error saving cache:`, err);
       }
-      await storage.local.set({ [CACHE_KEY]: cache });
-    } catch {
-    }
+    }, 200);
   }
+
+  let lastPruneTime = 0;
   function pruneCache() {
     const now = Date.now();
+    if (now - lastPruneTime < 60000) return;
+    lastPruneTime = now;
+
     let changed = false;
     for (const [jk, entry] of Object.entries(cache)) {
-      if (!entry || typeof entry.savedAt !== "number") {
+      if (!entry || typeof entry.savedAt !== 'number') {
         delete cache[jk];
         changed = true;
         continue;
@@ -245,51 +338,71 @@
         changed = true;
       }
     }
-    if (changed) saveData();
+    if (changed) {
+      storage.local.set({ [CACHE_KEY]: cache }).catch(() => {});
+    }
   }
   function getActiveJk() {
     const url = new URL(location.href);
-    const vjk = url.searchParams.get("vjk");
+    const vjk = url.searchParams.get('vjk');
     if (vjk) return vjk;
     const active = document.querySelector(SELECTORS.activeLink);
-    return active?.getAttribute("data-jk") || null;
+    return active?.getAttribute('data-jk') || null;
+  }
+  function escapeJk(jk) {
+    if (!jk) return '';
+    return typeof window !== 'undefined' && window.CSS?.escape ? window.CSS.escape(jk) : jk;
   }
   function ensureBadgeWrapper(jk) {
-    const link = document.querySelector(`${SELECTORS.jobCardLink}[data-jk="${jk}"]`);
+    const link = document.querySelector(`${SELECTORS.jobCardLink}[data-jk="${escapeJk(jk)}"]`);
     if (!link) return null;
     const title = link.closest('.jobTitle, [data-testid="jobTitle"]') || link;
     const parent = title.parentNode;
     if (!parent) return null;
+
+    const allWrappers = parent.querySelectorAll('.badge-wrapper');
+    allWrappers.forEach((el) => {
+      if (el.getAttribute('data-jk') !== jk) {
+        el.remove();
+      }
+    });
+
     let wrapper = parent.querySelector(`.badge-wrapper[data-jk="${jk}"]`);
     if (wrapper) return wrapper;
-    const stale = parent.querySelectorAll(`.badge-wrapper[data-jk="${jk}"]`);
-    if (stale.length > 0) {
-      stale.forEach((el) => el.remove());
-    }
-    wrapper = document.createElement("div");
-    wrapper.className = "badge-wrapper";
-    wrapper.setAttribute("data-jk", jk);
+
+    wrapper = document.createElement('div');
+    wrapper.className = 'badge-wrapper';
+    wrapper.setAttribute('data-jk', jk);
     parent.insertBefore(wrapper, title);
     return wrapper;
   }
   function getShiftClass(shift) {
-    if (/night|graveyard|overnight/i.test(shift)) return "badge-shift-night";
-    if (/mid/i.test(shift)) return "badge-shift-mid";
-    return "badge-shift-day";
-  }
-  function getShiftEmoji(shift) {
-    if (/night|graveyard|overnight/i.test(shift)) return "🌙";
-    if (/mid/i.test(shift)) return "🕒";
-    return "☀️";
+    if (/night|graveyard|overnight/i.test(shift)) return 'badge-shift-night';
+    if (/mid/i.test(shift)) return 'badge-shift-mid';
+    if (/rotating/i.test(shift)) return 'badge-shift-rotating';
+    if (/swing/i.test(shift)) return 'badge-shift-swing';
+    return 'badge-shift-day';
   }
   function getSetupClass(setup) {
-    return `badge-setup-${(setup || "").toLowerCase()}`;
+    return `badge-setup-${(setup || '').toLowerCase()}`;
   }
-  function getSetupEmoji(setup) {
-    if (setup === "Remote") return "🏠";
-    if (setup === "Hybrid") return "🤝";
-    return "🏢";
+
+  function inlineIconEl(name, cls, alt) {
+    const img = document.createElement('img');
+    if (typeof ICONS !== 'undefined' && ICONS[name]) img.src = ICONS[name];
+    img.alt = alt || '';
+    img.className = cls || 'nizviewer-btn-icon';
+    return img;
   }
+
+  function setBtnText(btn, iconName, text) {
+    btn.textContent = '';
+    if (iconName && typeof ICONS !== 'undefined' && ICONS[iconName]) {
+      btn.appendChild(inlineIconEl(iconName, 'nizviewer-btn-icon'));
+    }
+    btn.appendChild(document.createTextNode(text));
+  }
+
   function renderBadges(jk) {
     const entry = cache[jk];
     const wrapper = ensureBadgeWrapper(jk);
@@ -308,102 +421,206 @@
       pe: entry?.perks,
       ag: entry?.ageLimit,
       ge: entry?.gender,
-      p: badgePrefs
+      p: badgePrefs,
     });
-    if (wrapper.getAttribute("data-rendered-hash") === stateHash) return;
-    wrapper.setAttribute("data-rendered-hash", stateHash);
+    if (wrapper.getAttribute('data-rendered-hash') === stateHash) return;
+    wrapper.setAttribute('data-rendered-hash', stateHash);
     isApplyingChanges = true;
     try {
       wrapper.replaceChildren();
       if (!extensionEnabled) return;
       if (!entry) return;
+
+      const infoRows = [];
       if (entry.datePostedIso) {
         const date = new Date(entry.datePostedIso);
         const diffTime = Math.abs(Date.now() - date.getTime());
         const daysAgo = Math.floor(diffTime / 864e5);
-        const b = document.createElement("div");
-        b.className = `nizviewer-badge badge-${getFreshnessTier(daysAgo)}`;
-        const formattedDate = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date);
-        b.textContent = `📅 ${formattedDate} (${daysAgo === 0 ? "Today" : `${daysAgo}d ago`})`;
-        b.title = `Originally posted on ${date.toDateString()}`;
-        b.addEventListener('click', (e) => toggleFilter(e, 'Freshness', daysAgo <= 7 ? 'Fresh' : daysAgo <= 14 ? 'Recent' : 'Old'));
-        wrapper.appendChild(b);
+        const formattedDate = new Intl.DateTimeFormat('en-US', {
+          month: 'short',
+          day: 'numeric',
+        }).format(date);
+        infoRows.push({
+          label: 'Posted',
+          value: `${formattedDate} (${daysAgo === 0 ? 'Today' : `${daysAgo}d ago`})`,
+          title: `Originally posted on ${date.toDateString()}`,
+          cls: `badge-${getFreshnessTier(daysAgo)}`,
+        });
       }
-      
       if (entry.salary && badgePrefs.salary) {
-          const b = document.createElement("div");
-          b.className = "nizviewer-badge badge-info-pill";
-          b.textContent = `💰 ${entry.salary}`;
-          wrapper.appendChild(b);
+        infoRows.push({ label: 'Salary', value: entry.salary, cls: 'badge-salary' });
       }
-      
-      if (entry.shift && badgePrefs.jobType) {
-          const b = document.createElement("div");
-          b.className = `nizviewer-badge badge-info-pill ${getShiftClass(entry.shift)}`;
-          b.textContent = `${getShiftEmoji(entry.shift)} ${entry.shift}`;
-          b.addEventListener('click', (e) => toggleFilter(e, 'Shift', entry.shift));
-          wrapper.appendChild(b);
+      if (entry.shift && badgePrefs.shift) {
+        infoRows.push({ label: 'Shift', value: entry.shift, cls: getShiftClass(entry.shift) });
       }
       if (entry.workSetup && badgePrefs.workSetup) {
-        const b = document.createElement("div");
-        b.className = `nizviewer-badge badge-info-pill ${getSetupClass(entry.workSetup)}`;
-        b.textContent = `${getSetupEmoji(entry.workSetup)} ${entry.workSetup}`;
-        b.addEventListener('click', (e) => toggleFilter(e, 'Setup', entry.workSetup));
-        wrapper.appendChild(b);
+        infoRows.push({
+          label: 'Work Setup',
+          value: entry.workSetup,
+          cls: getSetupClass(entry.workSetup),
+        });
       }
-      if (entry.experience && badgePrefs.degree) {
-        const b = document.createElement("div");
-        b.className = "nizviewer-badge badge-info-pill badge-experience";
-        b.textContent = `💼 ${entry.experience}`;
-        b.addEventListener('click', (e) => toggleFilter(e, 'Experience', entry.experience));
-        wrapper.appendChild(b);
+      if (entry.experience && badgePrefs.experience) {
+        infoRows.push({
+          label: 'Experience',
+          value: entry.experience,
+          cls: 'badge-experience',
+        });
       }
       if (entry.jobType && badgePrefs.jobType) {
-        const b = document.createElement("div");
-        b.className = "nizviewer-badge badge-info-pill badge-jobtype";
-        b.textContent = `⏱️ ${entry.jobType}`;
-        b.addEventListener('click', (e) => toggleFilter(e, 'Type', entry.jobType));
-        wrapper.appendChild(b);
+        infoRows.push({ label: 'Job Type', value: entry.jobType, cls: 'badge-jobtype' });
       }
       if (entry.degree && badgePrefs.degree) {
-        const b = document.createElement("div");
-        b.className = "nizviewer-badge badge-info-pill badge-degree";
-        b.textContent = `🎓 ${entry.degree}`;
-        b.addEventListener('click', (e) => toggleFilter(e, 'Degree', entry.degree));
-        wrapper.appendChild(b);
-      }
-      if (entry.techStack && badgePrefs.techStack) {
-        const b = document.createElement("div");
-        b.className = "nizviewer-badge badge-info-pill badge-techstack";
-        b.textContent = `💻 ${entry.techStack}`;
-        b.title = entry.techStack;
-        wrapper.appendChild(b);
+        infoRows.push({ label: 'Degree', value: entry.degree, cls: 'badge-degree' });
       }
       if (entry.benefits && badgePrefs.benefits) {
-        const b = document.createElement("div");
-        b.className = "nizviewer-badge badge-info-pill badge-benefits";
-        b.textContent = `🏦 ${entry.benefits}`;
-        b.title = "Retirement & Statutory Benefits";
-        wrapper.appendChild(b);
+        infoRows.push({
+          label: 'Benefits',
+          value: entry.benefits,
+          title: 'Retirement & Statutory Benefits',
+          cls: 'badge-benefits',
+        });
       }
       if (entry.perks && badgePrefs.perks) {
-        const b = document.createElement("div");
-        b.className = "nizviewer-badge badge-info-pill badge-perks";
-        b.textContent = `🚗 ${entry.perks}`;
-        b.title = "Allowances & Perks";
-        wrapper.appendChild(b);
+        infoRows.push({
+          label: 'Perks',
+          value: entry.perks,
+          title: 'Allowances & Perks',
+          cls: 'badge-perks',
+        });
       }
       if (entry.ageLimit && badgePrefs.ageLimit) {
-        const b = document.createElement("div");
-        b.className = "nizviewer-badge badge-info-pill badge-age";
-        b.textContent = `🎂 ${entry.ageLimit}`;
-        wrapper.appendChild(b);
+        infoRows.push({ label: 'Age Limit', value: entry.ageLimit, cls: 'badge-age' });
       }
       if (entry.gender && badgePrefs.gender) {
-        const b = document.createElement("div");
-        b.className = "nizviewer-badge badge-info-pill badge-gender";
-        b.textContent = `👥 ${entry.gender}`;
-        wrapper.appendChild(b);
+        infoRows.push({ label: 'Gender', value: entry.gender, cls: 'badge-gender' });
+      }
+
+      const techs =
+        entry.techStack && badgePrefs.techStack ? entry.techStack.split(', ').filter(Boolean) : [];
+
+      if (infoRows.length || techs.length) {
+        const card = document.createElement('div');
+        card.className = 'nizviewer-tech-stack-card';
+
+        const rowsEl = document.createElement('div');
+        rowsEl.className = 'nizviewer-tech-stack-rows';
+
+        for (const row of infoRows) {
+          const r = document.createElement('div');
+          r.className = `nizviewer-info-row ${row.cls}`;
+          if (row.title) r.title = row.title;
+
+          const labelEl = document.createElement('span');
+          labelEl.className = 'nizviewer-info-label';
+          labelEl.textContent = row.label;
+          r.appendChild(labelEl);
+
+          const valueEl = document.createElement('span');
+          valueEl.className = 'nizviewer-info-value';
+          valueEl.textContent = row.value;
+          r.appendChild(valueEl);
+
+          rowsEl.appendChild(r);
+        }
+
+        if (techs.length) {
+          const grouped = new Map();
+          for (const tech of techs) {
+            const label =
+              typeof TECH_CATEGORY_MAP !== 'undefined'
+                ? TECH_CATEGORY_MAP[tech.toLowerCase()] || 'Other'
+                : 'Other';
+            if (!grouped.has(label)) grouped.set(label, []);
+            grouped.get(label).push(tech);
+          }
+
+          for (const [label, list] of grouped) {
+            const row = document.createElement('div');
+            row.className = 'nizviewer-tech-stack-row';
+
+            const cat = document.createElement('div');
+            cat.className = 'nizviewer-tech-stack-cat';
+            cat.textContent = label;
+            row.appendChild(cat);
+
+            const pillsEl = document.createElement('div');
+            pillsEl.className = 'nizviewer-tech-stack-pills';
+
+            for (const tech of list) {
+              const pill = document.createElement('span');
+              pill.className = 'nizviewer-tech-pill';
+              pill.textContent = tech;
+              pillsEl.appendChild(pill);
+            }
+
+            row.appendChild(pillsEl);
+            rowsEl.appendChild(row);
+          }
+        }
+
+        card.appendChild(rowsEl);
+        wrapper.appendChild(card);
+      }
+
+      const link = document.querySelector(`${SELECTORS.jobCardLink}[data-jk="${escapeJk(jk)}"]`);
+      const cardContainer = link?.closest(
+        'li, [data-testid="jobListing"], [class*="job_seen_beacon"]',
+      );
+      if (cardContainer) {
+        if (window.getComputedStyle(cardContainer).position === 'static') {
+          cardContainer.style.position = 'relative';
+        }
+
+        let cardBtn = cardContainer.querySelector(
+          `.nizviewer-card-action[data-jk="${escapeJk(jk)}"]`,
+        );
+        if (!cardBtn) {
+          cardBtn = document.createElement('button');
+          cardBtn.type = 'button';
+          cardBtn.setAttribute('data-jk', jk);
+          cardContainer.appendChild(cardBtn);
+        }
+
+        if (!entry?.deepScanned) {
+          cardBtn.className = 'nizviewer-card-action badge-fetch-btn';
+          setBtnText(cardBtn, 'bolt', 'Fetch');
+          cardBtn.title =
+            'Full job details have not been fetched yet. Click to fetch full details & tech stack';
+        } else {
+          cardBtn.className = 'nizviewer-card-action badge-refetch-btn';
+          setBtnText(cardBtn, 'rotate', 'Refetch Details');
+          cardBtn.title = 'Job details fetched. Click to re-fetch latest details';
+        }
+
+        if (!cardBtn.__nizBound) {
+          cardBtn.__nizBound = true;
+          cardBtn.addEventListener('click', async (ev) => {
+            ev.stopPropagation();
+            ev.preventDefault();
+            cardBtn.disabled = true;
+            setBtnText(cardBtn, 'hourglass', 'Fetching...');
+            const success = await fetchJobDetailsDirectly(jk);
+            if (success) {
+              setBtnText(cardBtn, 'check', 'Fetched');
+              setTimeout(() => {
+                cardBtn.disabled = false;
+                cardBtn.className = 'nizviewer-card-action badge-refetch-btn';
+                setBtnText(cardBtn, 'rotate', 'Refetch Details');
+              }, 1500);
+            } else {
+              setBtnText(cardBtn, 'cross', 'Failed');
+              setTimeout(() => {
+                cardBtn.disabled = false;
+                setBtnText(
+                  cardBtn,
+                  entry?.deepScanned ? 'rotate' : 'bolt',
+                  entry?.deepScanned ? 'Refetch Details' : 'Fetch',
+                );
+              }, 2000);
+            }
+          });
+        }
       }
     } finally {
       setTimeout(() => {
@@ -411,195 +628,159 @@
       }, 50);
     }
   }
-  function scavengeCard(jk) {
-    const link = document.querySelector(`${SELECTORS.jobCardLink}[data-jk="${jk}"]`);
-    const card = link?.closest('li, [data-testid="jobListing"], [class*="job_seen_beacon"]');
-    if (!card) return;
-    const text = card.textContent?.replace(/\s+/g, " ") || "";
-    const { shift, experience, workSetup, jobType, degree, techStack, benefits, perks, ageLimit, gender } = parseDetailHtml(text);
-    const existing = cache[jk];
-    if (existing?.deepScanned) return;
-    const hasNew = 
-      (shift && shift !== existing?.shift) || 
-      (experience && experience !== existing?.experience) || 
-      (workSetup && workSetup !== existing?.workSetup) ||
-      (jobType && jobType !== existing?.jobType) ||
-      (degree && degree !== existing?.degree) ||
-      (techStack && techStack !== existing?.techStack) ||
-      (benefits && benefits !== existing?.benefits) ||
-      (perks && perks !== existing?.perks) ||
-      (ageLimit && ageLimit !== existing?.ageLimit) ||
-      (gender && gender !== existing?.gender);
-    if (hasNew) {
+
+  async function fetchJobDetailsDirectly(jk) {
+    try {
+      const url = `${location.origin}/viewjob?jk=${encodeURIComponent(jk)}`;
+      const res = await window.fetch(url, { headers: { Accept: 'text/html' } });
+      const html = await res.text();
+      if (!html || html.length < 100) throw new Error('Received empty HTML response');
+
+      const existing = cache[jk] || { savedAt: Date.now() };
+      const {
+        shift,
+        experience,
+        workSetup,
+        jobType,
+        degree,
+        techStack,
+        salary,
+        benefits,
+        perks,
+        ageLimit,
+        gender,
+      } = parseDetailHtml(html);
+
       cache[jk] = {
         ...existing,
-        shift: existing?.shift ?? shift,
-        experience: existing?.experience ?? experience,
-        workSetup: existing?.workSetup ?? workSetup,
-        jobType: existing?.jobType ?? jobType,
-        degree: existing?.degree ?? degree,
-        techStack: existing?.techStack ?? techStack,
-        benefits: existing?.benefits ?? benefits,
-        perks: existing?.perks ?? perks,
-        ageLimit: existing?.ageLimit ?? ageLimit,
-        gender: existing?.gender ?? gender,
-        savedAt: Date.now()
+        salary: salary ?? existing.salary,
+        shift: shift ?? existing.shift,
+        experience: experience ?? existing.experience,
+        workSetup: workSetup ?? existing.workSetup,
+        jobType: jobType ?? existing.jobType,
+        degree: degree ?? existing.degree,
+        techStack: techStack || existing.techStack || undefined,
+        benefits: benefits ?? existing.benefits,
+        perks: perks ?? existing.perks,
+        ageLimit: ageLimit ?? existing.ageLimit,
+        gender: gender ?? existing.gender,
+        savedAt: Date.now(),
+        deepScanned: true,
       };
+
+      renderBadges(jk);
+      saveData();
+      return true;
+    } catch (err) {
+      console.error(`[NizViewer Fetch] Direct fetch failed for job ${jk}:`, err);
+      return false;
+    }
+  }
+  function scavengeCard(jk) {
+    const link = document.querySelector(`${SELECTORS.jobCardLink}[data-jk="${escapeJk(jk)}"]`);
+    const card = link?.closest('li, [data-testid="jobListing"], [class*="job_seen_beacon"]');
+    if (!card) return false;
+    const existing = cache[jk];
+    if (existing?.deepScanned) return false;
+    const text = card.textContent?.replace(/\s+/g, ' ') || '';
+    const {
+      shift,
+      experience,
+      workSetup,
+      jobType,
+      degree,
+      techStack,
+      benefits,
+      perks,
+      ageLimit,
+      gender,
+    } = parseDetailHtml(text);
+
+    let changed = false;
+    const updated = { ...existing };
+
+    if (shift && !existing?.shift) {
+      updated.shift = shift;
+      changed = true;
+    }
+    if (experience && !existing?.experience) {
+      updated.experience = experience;
+      changed = true;
+    }
+    if (workSetup && !existing?.workSetup) {
+      updated.workSetup = workSetup;
+      changed = true;
+    }
+    if (jobType && !existing?.jobType) {
+      updated.jobType = jobType;
+      changed = true;
+    }
+    if (degree && !existing?.degree) {
+      updated.degree = degree;
+      changed = true;
+    }
+    if (techStack && !existing?.techStack) {
+      updated.techStack = techStack;
+      changed = true;
+    }
+    if (benefits && !existing?.benefits) {
+      updated.benefits = benefits;
+      changed = true;
+    }
+    if (perks && !existing?.perks) {
+      updated.perks = perks;
+      changed = true;
+    }
+    if (ageLimit && !existing?.ageLimit) {
+      updated.ageLimit = ageLimit;
+      changed = true;
+    }
+    if (gender && !existing?.gender) {
+      updated.gender = gender;
+      changed = true;
+    }
+
+    if (changed) {
+      updated.savedAt = Date.now();
+      cache[jk] = updated;
       renderBadges(jk);
     }
+    return changed;
   }
-  function applyFilters() {
-    const links = Array.from(document.querySelectorAll(SELECTORS.jobCardLink));
-    for (const link of links) {
-      const jk = link.getAttribute("data-jk");
-      const card = link.closest('li, [class*="job_seen_beacon"]');
-      if (!card) continue;
-      
-      if (activeFilters.size === 0) {
-        card.classList.remove('nizviewer-hidden-card');
-        continue;
-      }
-      
-      const entry = cache[jk];
-      if (!entry) {
-        card.classList.remove('nizviewer-hidden-card');
-        continue;
-      }
-      
-      let matchAll = true;
-      for (const filterStr of activeFilters) {
-        const [cat, val] = filterStr.split(':');
-        
-        let entryVal = null;
-        if (cat === 'Shift') entryVal = entry.shift;
-        else if (cat === 'Setup') entryVal = entry.workSetup;
-        else if (cat === 'Type') entryVal = entry.jobType;
-        else if (cat === 'Degree') entryVal = entry.degree;
-        else if (cat === 'Experience') entryVal = entry.experience;
-        else if (cat === 'Freshness' && entry.datePostedIso) {
-          const diffTime = Math.abs(Date.now() - new Date(entry.datePostedIso).getTime());
-          const daysAgo = Math.floor(diffTime / 864e5);
-          entryVal = daysAgo <= 7 ? 'Fresh' : daysAgo <= 14 ? 'Recent' : 'Old';
-        }
-        
-        if (entryVal !== val) {
-          matchAll = false;
-          break;
-        }
-      }
-      
-      if (matchAll) {
-        card.classList.remove('nizviewer-hidden-card');
-      } else {
-        card.classList.add('nizviewer-hidden-card');
-      }
-    }
-  }
-
-  function toggleFilter(e, category, value) {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    const key = `${category}:${value}`;
-    if (activeFilters.has(key)) {
-      activeFilters.delete(key);
-    } else {
-      activeFilters.add(key);
-    }
-    renderFilterBar();
-    applyFilters();
-  }
-
-  function renderFilterBar() {
-    if (!extensionEnabled) {
-      const existing = document.getElementById('nizviewer-filter-bar');
-      if (existing) existing.remove();
-      return;
-    }
-    const container = document.querySelector(SELECTORS.jobListContainer);
-    if (!container) return;
-    
-    let bar = document.getElementById('nizviewer-filter-bar');
-    if (!bar) {
-      bar = document.createElement('div');
-      bar.id = 'nizviewer-filter-bar';
-      bar.className = 'nizviewer-filter-bar';
-      container.parentElement.insertBefore(bar, container);
-    }
-    
-    const availableFilters = new Set();
-    const links = Array.from(document.querySelectorAll(SELECTORS.jobCardLink));
-    for (const link of links) {
-      const entry = cache[link.getAttribute("data-jk")];
-      if (entry) {
-        if (entry.shift) availableFilters.add(`Shift:${entry.shift}`);
-        if (entry.workSetup) availableFilters.add(`Setup:${entry.workSetup}`);
-        if (entry.jobType) availableFilters.add(`Type:${entry.jobType}`);
-      }
-    }
-    for (const f of activeFilters) availableFilters.add(f);
-    
-    if (availableFilters.size === 0) {
-      bar.style.display = 'none';
-      return;
-    }
-    
-    bar.style.display = 'flex';
-    bar.innerHTML = `<div class="nizviewer-filter-label">Filters &#9663;</div>`;
-    
-    const sortedFilters = Array.from(availableFilters).sort();
-    for (const filterStr of sortedFilters) {
-      const [cat, val] = filterStr.split(':');
-      const pill = document.createElement('div');
-      pill.className = `nizviewer-filter-pill ${activeFilters.has(filterStr) ? 'active' : ''}`;
-      pill.textContent = val;
-      pill.title = `Filter by ${cat}: ${val}`;
-      pill.setAttribute('aria-label', `Filter by ${val}`);
-      pill.setAttribute('role', 'button');
-      pill.setAttribute('tabindex', '0');
-      pill.addEventListener('click', () => toggleFilter(null, cat, val));
-      pill.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') toggleFilter(null, cat, val); });
-      bar.appendChild(pill);
-    }
-
-    if (activeFilters.size > 0) {
-      const clearBtn = document.createElement('div');
-      clearBtn.className = 'nizviewer-filter-pill';
-      clearBtn.textContent = '× Clear';
-      clearBtn.title = 'Clear all active filters';
-      clearBtn.setAttribute('role', 'button');
-      clearBtn.setAttribute('tabindex', '0');
-      clearBtn.style.marginLeft = 'auto';
-      clearBtn.style.color = 'var(--colors-error, #e53e3e)';
-      clearBtn.addEventListener('click', () => {
-        activeFilters.clear();
-        renderFilterBar();
-        applyFilters();
-      });
-      bar.appendChild(clearBtn);
-    }
-  }
-
   function renderAllVisible() {
     pruneCache();
+
+    const allWrappers = document.querySelectorAll('.badge-wrapper');
+    for (const w of allWrappers) {
+      const wJk = w.getAttribute('data-jk');
+      if (wJk) {
+        const link = w.parentElement?.querySelector(
+          `${SELECTORS.jobCardLink}[data-jk="${escapeJk(wJk)}"]`,
+        );
+        if (!link) {
+          w.remove();
+        }
+      }
+    }
+
     const links = Array.from(document.querySelectorAll(SELECTORS.jobCardLink));
     const jks = [];
+    let cacheChanged = false;
     for (const a of links) {
-      const jk = a.getAttribute("data-jk");
+      const jk = a.getAttribute('data-jk');
       if (jk) {
         jks.push(jk);
-        scavengeCard(jk);
+        if (scavengeCard(jk)) cacheChanged = true;
         renderBadges(jk);
       }
     }
-    if (jks.length) {
-      window.postMessage({ source: "nizviewer", type: "INTERESTED_JKS", jks }, "*");
+    if (cacheChanged) {
+      saveData();
     }
-    
-    renderFilterBar();
-    applyFilters();
-    
+    if (jks.length) {
+      window.postMessage({ source: 'nizviewer', type: 'INTERESTED_JKS', jks }, location.origin);
+    }
+
     if (typeof window.injectAutoScanBtn === 'function') {
       window.injectAutoScanBtn();
     }
@@ -607,102 +788,169 @@
       window.updateAutoScanBtnState();
     }
   }
+  function isDetailPanelMatchingJk(jk) {
+    const activeVjk = new URL(window.location.href).searchParams.get('vjk');
+    if (activeVjk && activeVjk !== jk) return false;
+
+    const rightPane = document.querySelector(
+      '.jobsearch-RightPane, #jobsearch-ViewJobPane-container',
+    );
+    if (rightPane) {
+      const isSkeleton = rightPane.querySelector(
+        '[class*="Skeleton"], [class*="skeleton"], [data-testid="skeleton"], [aria-busy="true"]',
+      );
+      if (isSkeleton) return false;
+    }
+
+    const detailContainer =
+      rightPane || document.querySelector('[data-testid="jobsearch-JobInfoHeader"]');
+    if (!detailContainer) return false;
+
+    const jkLink = detailContainer.querySelector(`a[href*="${jk}"], [data-jk="${jk}"]`);
+    if (jkLink) return true;
+
+    const cardLink = document.querySelector(`${SELECTORS.jobCardLink}[data-jk="${jk}"]`);
+    if (!cardLink) return false;
+
+    const cardTitle = (cardLink.textContent || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, ' ')
+      .trim();
+    const headerEl = detailContainer.querySelector(
+      '[data-testid="jobsearch-JobInfoHeader"], h1.jobsearch-JobInfoHeader-title, h1[class*="jobsearch"], [class*="JobInfoHeader"] h1, h1',
+    );
+    if (!headerEl) return false;
+    const headerTitle = (headerEl.textContent || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, ' ')
+      .trim();
+
+    const cardWords = cardTitle.split(/\s+/).filter((w) => w.length > 2);
+    if (cardWords.length === 0) return true;
+
+    const matchCount = cardWords.filter((w) => headerTitle.includes(w)).length;
+    return matchCount >= Math.ceil(cardWords.length * 0.4);
+  }
+
+  const inFlightScrapes = new Set();
   function scrapeDetailPanel(jk, attempt = 0) {
+    if (attempt === 0) {
+      if (inFlightScrapes.has(jk)) return Promise.resolve(false);
+      inFlightScrapes.add(jk);
+    }
     return new Promise((resolve) => {
+      const finish = (res) => {
+        inFlightScrapes.delete(jk);
+        resolve(res);
+      };
       try {
-        const activeVjk = new URL(window.location.href).searchParams.get("vjk");
-        if (activeVjk && activeVjk !== jk) {
-          if (attempt < 5) {
-            setTimeout(() => resolve(scrapeDetailPanel(jk, attempt + 1)), 800);
+        if (!isDetailPanelMatchingJk(jk)) {
+          if (attempt < 8) {
+            setTimeout(() => {
+              inFlightScrapes.delete(jk);
+              scrapeDetailPanel(jk, attempt + 1).then(resolve);
+            }, 400);
             return;
           }
-          resolve(false);
+          finish(false);
           return;
         }
-      const HEADER_SELECTORS = [
-        '[data-testid="jobsearch-JobInfoHeader"]',
-        '[data-testid="inlineHeader-companyLocation"]',
-        '[class*="jobsearch-InlineCompanyRating"]',
-        '[class*="CompanyInfo"]',
-        '[class*="companyLocation"]',
-        '[class*="jobLocation"]',
-        ".jobsearch-JobInfoHeader-subtitle",
-        ".jobsearch-CompanyInfoWithoutHeaderImage"
-      ];
-      const BODY_SELECTORS = [
-        "#jobDescriptionText",
-        '[id*="jobDescription"]',
-        '[class*="jobDescription"]',
-        ".jobsearch-JobComponent",
-        '[class*="JobDetail"]',
-        '[class*="jobDetail"]',
-        '[data-testid="job-detail"]',
-        ".job-description"
-      ];
-      let headerText = "";
-      for (const sel of HEADER_SELECTORS) {
-        const el = document.querySelector(sel);
-        if (el?.textContent) headerText += " " + el.textContent;
-      }
-      let bodyText = "";
-      for (const sel of BODY_SELECTORS) {
-        const el = document.querySelector(sel);
-        if (el?.textContent && el.textContent.length > 50) {
-          bodyText = el.textContent;
-          break;
+
+        const HEADER_SELECTORS = [
+          '[data-testid="jobsearch-JobInfoHeader"]',
+          '[data-testid="inlineHeader-companyLocation"]',
+          '[class*="jobsearch-InlineCompanyRating"]',
+          '[class*="CompanyInfo"]',
+          '[class*="companyLocation"]',
+          '[class*="jobLocation"]',
+          '.jobsearch-JobInfoHeader-subtitle',
+          '.jobsearch-CompanyInfoWithoutHeaderImage',
+        ];
+        const BODY_SELECTORS = [
+          '#jobDescriptionText',
+          '[id*="jobDescription"]',
+          '[class*="jobDescription"]',
+          '.jobsearch-JobComponent',
+          '[class*="JobDetail"]',
+          '[class*="jobDetail"]',
+          '[data-testid="job-detail"]',
+          '.job-description',
+        ];
+        let headerText = '';
+        for (const sel of HEADER_SELECTORS) {
+          const el = document.querySelector(sel);
+          if (el?.textContent) headerText += ' ' + el.textContent;
         }
-      }
-      if (!bodyText) {
-        const main = document.querySelector('main, [role="main"]');
-        if (main?.textContent && main.textContent.length > 100) bodyText = main.textContent;
-      }
-      const combinedText = (headerText + " " + bodyText).replace(/\s+/g, " ");
-      if (combinedText.length < 30) {
-        if (attempt < 5) {
-          setTimeout(() => resolve(scrapeDetailPanel(jk, attempt + 1)), 800);
+        let bodyText = '';
+        for (const sel of BODY_SELECTORS) {
+          const el = document.querySelector(sel);
+          if (el?.textContent && el.textContent.length > 50) {
+            bodyText = el.textContent;
+            break;
+          }
+        }
+        const combinedText = (headerText + ' ' + bodyText).replace(/\s+/g, ' ');
+        if (combinedText.length < 30 || bodyText.length < 30) {
+          if (attempt < 8) {
+            setTimeout(() => {
+              inFlightScrapes.delete(jk);
+              scrapeDetailPanel(jk, attempt + 1).then(resolve);
+            }, 400);
+            return;
+          }
+          finish(false);
           return;
         }
-        resolve(false);
-        return;
+        const existing = cache[jk] || { savedAt: Date.now() };
+        const {
+          shift,
+          experience,
+          workSetup,
+          jobType,
+          degree,
+          techStack,
+          salary,
+          benefits,
+          perks,
+          ageLimit,
+          gender,
+        } = parseDetailHtml(combinedText);
+        const needsUpdate =
+          (salary && salary !== existing.salary) ||
+          (shift && shift !== existing.shift) ||
+          (experience && experience !== existing.experience) ||
+          (workSetup && workSetup !== existing.workSetup) ||
+          (jobType && jobType !== existing.jobType) ||
+          (degree && degree !== existing.degree) ||
+          (techStack && techStack !== existing.techStack) ||
+          (benefits && benefits !== existing.benefits) ||
+          (perks && perks !== existing.perks) ||
+          (ageLimit && ageLimit !== existing.ageLimit) ||
+          (gender && gender !== existing.gender);
+        if (needsUpdate || !existing.deepScanned) {
+          cache[jk] = {
+            ...existing,
+            salary: salary ?? existing.salary,
+            shift: shift ?? existing.shift,
+            experience: experience ?? existing.experience,
+            workSetup: workSetup ?? existing.workSetup,
+            jobType: jobType ?? existing.jobType,
+            degree: degree ?? existing.degree,
+            techStack: techStack || existing.techStack || undefined,
+            benefits: benefits ?? existing.benefits,
+            perks: perks ?? existing.perks,
+            ageLimit: ageLimit ?? existing.ageLimit,
+            gender: gender ?? existing.gender,
+            savedAt: Date.now(),
+            deepScanned: true,
+          };
+          renderBadges(jk);
+          saveData();
+        }
+        finish(true);
+      } catch {
+        finish(false);
       }
-      const existing = cache[jk] || { savedAt: Date.now() };
-      const { shift, experience, workSetup, jobType, degree, techStack, salary, benefits, perks, ageLimit, gender } = parseDetailHtml(combinedText);
-      const needsUpdate = 
-        (salary && salary !== existing.salary) ||
-        (shift && shift !== existing.shift) || 
-        (experience && experience !== existing.experience) || 
-        (workSetup && workSetup !== existing.workSetup) ||
-        (jobType && jobType !== existing.jobType) ||
-        (degree && degree !== existing.degree) ||
-        (techStack && techStack !== existing.techStack) ||
-        (benefits && benefits !== existing.benefits) ||
-        (perks && perks !== existing.perks) ||
-        (ageLimit && ageLimit !== existing.ageLimit) ||
-        (gender && gender !== existing.gender);
-      if (needsUpdate) {
-        cache[jk] = {
-          ...existing,
-          salary: salary ?? existing.salary,
-          shift: shift ?? existing.shift,
-          experience: experience ?? existing.experience,
-          workSetup: workSetup ?? existing.workSetup,
-          jobType: jobType ?? existing.jobType,
-          degree: degree ?? existing.degree,
-          techStack: techStack ?? existing.techStack,
-          benefits: benefits ?? existing.benefits,
-          perks: perks ?? existing.perks,
-          ageLimit: ageLimit ?? existing.ageLimit,
-          gender: gender ?? existing.gender,
-          savedAt: Date.now(),
-          deepScanned: true
-        };
-        renderBadges(jk);
-        saveData();
-      }
-      resolve(true);
-    } catch {
-      resolve(false);
-    }
     });
   }
   async function onSelectionMaybeChanged() {
@@ -714,12 +962,25 @@
   function init() {
     injectHook();
     loadData().then(async () => {
-      const res = await storage.local.get(["extensionEnabled"]);
+      const res = await storage.local.get(['extensionEnabled']);
       if (res.extensionEnabled !== void 0) extensionEnabled = res.extensionEnabled;
-      
-      window.addEventListener("message", async (ev) => {
+
+      if (storage.onChanged) {
+        storage.onChanged.addListener((changes, areaName) => {
+          if (areaName === 'local' && changes[CACHE_KEY]) {
+            if (!changes[CACHE_KEY].newValue) {
+              cache = {};
+            } else {
+              cache = { ...changes[CACHE_KEY].newValue, ...cache };
+            }
+            renderAllVisible();
+          }
+        });
+      }
+
+      window.addEventListener('message', async (ev) => {
         const d = ev.data;
-        if (!d || d.source !== "nizviewer" || d.type !== "JOB_DATES") return;
+        if (!d || d.source !== 'nizviewer' || d.type !== 'JOB_DATES') return;
         if (Array.isArray(d.payload)) {
           let changed = false;
           for (const item of d.payload) {
@@ -728,9 +989,9 @@
             if (existing?.deepScanned && !item.deepScanned) continue;
             const updated = {
               ...existing,
-              datePostedIso: item.dateIso || existing?.datePostedIso,
-              companyName: item.companyName || existing?.companyName,
-              salary: item.salary || existing?.salary,
+              datePostedIso: item.dateIso ?? existing?.datePostedIso,
+              companyName: item.companyName ?? existing?.companyName,
+              salary: item.salary ?? existing?.salary,
               shift: item.shift ?? existing?.shift,
               experience: item.experience ?? existing?.experience,
               workSetup: item.workSetup ?? existing?.workSetup,
@@ -742,7 +1003,7 @@
               ageLimit: item.ageLimit ?? existing?.ageLimit,
               gender: item.gender ?? existing?.gender,
               savedAt: Date.now(),
-              deepScanned: item.deepScanned || existing?.deepScanned
+              deepScanned: item.deepScanned || existing?.deepScanned,
             };
             if (JSON.stringify(existing) !== JSON.stringify(updated)) {
               cache[item.jk] = updated;
@@ -761,16 +1022,16 @@
       renderAllVisible();
       onSelectionMaybeChanged();
     }, 100);
-    rt.onMessage.addListener((msg) => {
-      if (msg.type === "EXTENSION_STATE_CHANGED") {
+    rt.onMessage.addListener(async (msg) => {
+      if (msg.type === 'EXTENSION_STATE_CHANGED') {
         extensionEnabled = msg.enabled;
         renderAllVisible();
-      } else if (msg.type === "PREFS_CHANGED") {
+      } else if (msg.type === 'PREFS_CHANGED') {
         badgePrefs = { ...badgePrefs, ...msg.prefs };
         renderAllVisible();
-      } else if (msg.type === "CACHE_CLEARED") {
+      } else if (msg.type === 'CACHE_CLEARED') {
         cache = {};
-        activeFilters.clear();
+        await storage.local.remove(CACHE_KEY);
         renderAllVisible();
       }
     });
@@ -785,12 +1046,16 @@
         scrapeDetailPanel(activeJk, 0);
       }
     }, 1e3);
-    document.addEventListener("click", (e) => {
-      const t = e.target;
-      if (t?.closest?.(SELECTORS.jobCardLink)) {
-        setTimeout(() => debounced(), 350);
-      }
-    }, true);
+    document.addEventListener(
+      'click',
+      (e) => {
+        const t = e.target;
+        if (t?.closest?.(SELECTORS.jobCardLink)) {
+          setTimeout(() => debounced(), 350);
+        }
+      },
+      true,
+    );
     const observer = new MutationObserver(() => {
       if (isApplyingChanges) return;
       debounced();
@@ -798,83 +1063,119 @@
     observer.observe(document.body, { childList: true, subtree: true });
     let isScanning = false;
     let abortScan = false;
-    
-    document.addEventListener('click', (e) => {
-      if (isScanning && e.isTrusted && !e.target.closest('#nizviewer-autoscan')) {
-        abortScan = true;
-      }
-    }, true);
-    
-    window.injectAutoScanBtn = function() {
+
+    document.addEventListener(
+      'click',
+      (e) => {
+        if (isScanning && e.isTrusted && !e.target.closest('#nizviewer-autoscan')) {
+          abortScan = true;
+        }
+      },
+      true,
+    );
+
+    window.injectAutoScanBtn = function () {
       if (document.getElementById('nizviewer-autoscan')) return;
-      
+
       const btn = document.createElement('button');
       btn.id = 'nizviewer-autoscan';
       btn.className = 'auto-scan-btn';
       btn.type = 'button';
-      
-      window.renderBtnHtml = (text, progress = null) => {
-        const intervalSec = parseFloat(((parseInt(badgePrefs.scanInterval, 10) || 1500) / 1000).toFixed(1));
-        const progressHtml = progress !== null ? `<div class="scan-progress-fill" style="width: ${progress}%"></div>` : '';
-        return `
-          ${progressHtml}
-          <div class="scan-content-wrapper">
-            <span>${text}</span>
-            <div class="scan-interval-pill" title="Configure speed in the NizViewer popup">
-              ${intervalSec}s
-              <div class="scan-interval-tooltip">⚙️ Configure speed in NizViewer popup</div>
-            </div>
-          </div>
-        `;
+
+      window.setBtnContent = function (btn, text, progress = null, iconName = null) {
+        const intervalSec = parseFloat(
+          ((parseInt(badgePrefs.scanInterval, 10) || 1500) / 1000).toFixed(1),
+        );
+        btn.textContent = '';
+
+        if (progress !== null) {
+          const fill = document.createElement('div');
+          fill.className = 'scan-progress-fill';
+          fill.style.width = `${progress}%`;
+          btn.appendChild(fill);
+        }
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'scan-content-wrapper';
+
+        if (iconName && typeof ICONS !== 'undefined' && ICONS[iconName]) {
+          wrapper.appendChild(inlineIconEl(iconName, 'nizviewer-btn-icon'));
+        }
+
+        const span = document.createElement('span');
+        span.textContent = text;
+        wrapper.appendChild(span);
+
+        const pill = document.createElement('div');
+        pill.className = 'scan-interval-pill';
+        pill.title = 'Configure speed in the NizViewer popup';
+        pill.textContent = `${intervalSec}s`;
+
+        const tooltip = document.createElement('div');
+        tooltip.className = 'scan-interval-tooltip';
+        tooltip.textContent = 'Configure speed in NizViewer popup';
+        tooltip.prepend(inlineIconEl('gear', 'nizviewer-btn-icon'));
+        pill.appendChild(tooltip);
+
+        wrapper.appendChild(pill);
+        btn.appendChild(wrapper);
       };
-      
-      window.getUnscannedJks = function() {
+
+      window.getUnscannedJks = function () {
         const lks = Array.from(document.querySelectorAll(SELECTORS.jobCardLink));
         let curUnsc = lks
-          .map(l => l.getAttribute('data-jk'))
-          .filter(jk => jk && (!cache[jk] || !cache[jk].deepScanned));
-          
+          .map((l) => l.getAttribute('data-jk'))
+          .filter((jk) => jk && (!cache[jk] || !cache[jk].deepScanned));
+
         if (badgePrefs.scanLimit && parseInt(badgePrefs.scanLimit, 10) > 0) {
           curUnsc = curUnsc.slice(0, parseInt(badgePrefs.scanLimit, 10));
         }
         return curUnsc;
       };
-      
-      window.updateAutoScanBtnState = function() {
+
+      window.updateAutoScanBtnState = function () {
         if (isScanning) return;
         const b = document.getElementById('nizviewer-autoscan');
         if (!b) return;
-        
-        if (window.location.pathname.includes('/viewjob') || window.location.pathname.includes('/v/')) {
+
+        if (
+          window.location.pathname.includes('/viewjob') ||
+          window.location.pathname.includes('/v/')
+        ) {
           b.style.display = 'none';
           return;
         } else {
           b.style.display = 'block';
         }
-        
+
         const curUnsc = window.getUnscannedJks();
-        b.innerHTML = window.renderBtnHtml(curUnsc.length > 0 ? `🤖 Auto-Scan (${curUnsc.length} jobs)` : `🤖 Auto-Scan Page`);
+        window.setBtnContent(
+          b,
+          curUnsc.length > 0 ? `Auto-Scan (${curUnsc.length} jobs)` : 'Auto-Scan Page',
+          null,
+          'robot',
+        );
       };
-      
+
       window.updateAutoScanBtnState();
-      
+
       btn.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        
+
         if (isScanning) {
           abortScan = true;
-          btn.innerHTML = window.renderBtnHtml(`🛑 Stopping...`);
+          window.setBtnContent(btn, 'Stopping...', null, 'stop');
           return;
         }
-        
+
         isScanning = true;
         abortScan = false;
-        
+
         const unScannedJks = window.getUnscannedJks();
-        
+
         if (unScannedJks.length === 0) {
-          btn.innerHTML = window.renderBtnHtml(`✨ All Scanned`);
+          window.setBtnContent(btn, 'All Scanned', null, 'sparkles');
           setTimeout(() => {
             if (!isScanning) window.updateAutoScanBtnState();
             isScanning = false;
@@ -882,51 +1183,68 @@
           }, 2000);
           return;
         }
-        
+
         const originalScrollY = window.scrollY;
         document.body.classList.add('nizviewer-scanning-active');
-        
+
         for (let i = 0; i < unScannedJks.length; i++) {
           if (!extensionEnabled || abortScan) break;
           const jk = unScannedJks[i];
-          
+
           btn.classList.add('scanning');
           const percent = ((i / unScannedJks.length) * 100).toFixed(1);
-          btn.innerHTML = window.renderBtnHtml(`⏳ Scanning ${i + 1}/${unScannedJks.length}...`, percent);
-          
+          window.setBtnContent(
+            btn,
+            `Scanning ${i + 1}/${unScannedJks.length}...`,
+            percent,
+            'hourglass',
+          );
+
           const link = document.querySelector(`${SELECTORS.jobCardLink}[data-jk="${jk}"]`);
           if (!link) continue;
-          
+
           link.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          
+
           const baseInterval = parseInt(badgePrefs.scanInterval, 10) || 1500;
-          await new Promise(resolve => setTimeout(resolve, baseInterval));
-          
+          await new Promise((resolve) => setTimeout(resolve, baseInterval));
+
           if (abortScan) break;
-          
+
           const titleEl = link.querySelector('span[title]') || link.querySelector('h2') || link;
-          titleEl.dispatchEvent(new MouseEvent('click', { 
-            bubbles: true, 
-            cancelable: true, 
-            view: window,
-            button: 0,
-            buttons: 1
-          }));
-          
+          titleEl.dispatchEvent(
+            new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+              view: window,
+              button: 0,
+              buttons: 1,
+            }),
+          );
+
           await scrapeDetailPanel(jk, 0);
         }
-        
+
         btn.classList.remove('scanning');
-        btn.innerHTML = window.renderBtnHtml(abortScan ? `🛑 Scan Stopped` : `✨ Scan Complete`);
+        window.setBtnContent(
+          btn,
+          abortScan ? 'Scan Stopped' : 'Scan Complete',
+          null,
+          abortScan ? 'stop' : 'sparkles',
+        );
         document.body.classList.remove('nizviewer-scanning-active');
-        
+
         if (abortScan) {
-          const closeBtn = document.querySelector('.jobsearch-RightPane-closeButton, [aria-label="Close"]');
-          if (closeBtn) closeBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+          const closeBtn = document.querySelector(
+            '.jobsearch-RightPane-closeButton, [aria-label="Close"]',
+          );
+          if (closeBtn)
+            closeBtn.dispatchEvent(
+              new MouseEvent('click', { bubbles: true, cancelable: true, view: window }),
+            );
         } else {
           window.scrollTo({ top: originalScrollY, behavior: 'smooth' });
         }
-        
+
         setTimeout(() => {
           isScanning = false;
           abortScan = false;
@@ -937,7 +1255,7 @@
     };
     window.injectAutoScanBtn();
   }
-  
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

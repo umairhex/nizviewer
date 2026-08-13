@@ -14,7 +14,6 @@ A browser extension for Chrome and Firefox that enriches Indeed job listings wit
 - **Tech Stack** — Key technologies mentioned in the listing
 - **Benefits & Perks** — Retirement, insurance, and allowance signals
 - **Auto-Scan** — One-click batch scanner with a real-time progress bar; reads each card without opening new tabs
-- **Feed Filter Bar** — Sticky filter bar above the job list; click any badge to instantly filter the feed
 - **Contextual Popup** — Settings only shown when on an Indeed feed; empty state on all other pages
 
 ---
@@ -27,12 +26,12 @@ Works on all regional Indeed domains including `.com`, `.ca`, `.co.uk`, `.com.pk
 
 ## Requirements
 
-| Tool | Minimum Version | Notes |
-|------|----------------|-------|
-| Node.js | **24 LTS** (Krypton) | v20 is EOL as of April 2026 |
-| pnpm | **11.x** | `corepack enable && corepack prepare pnpm@latest --activate` |
-| Chrome / Edge / Brave | 88+ | MV3 mandatory on Chrome Web Store since August 31, 2026 |
-| Firefox | 128+ (ESR) | MV3 supported since Firefox 109; both MV2 and MV3 accepted on AMO |
+| Tool                  | Minimum Version      | Notes                                                             |
+| --------------------- | -------------------- | ----------------------------------------------------------------- |
+| Node.js               | **24 LTS** (Krypton) | v20 is EOL as of April 2026                                       |
+| pnpm                  | **11.x**             | `corepack enable && corepack prepare pnpm@latest --activate`      |
+| Chrome / Edge / Brave | 88+                  | MV3 mandatory on Chrome Web Store since August 31, 2026           |
+| Firefox               | 128+ (ESR)           | MV3 supported since Firefox 109; both MV2 and MV3 accepted on AMO |
 
 ---
 
@@ -107,10 +106,10 @@ pnpm run format
 nizviewer/
 ├── manifest.json            # Extension manifest (MV3)
 ├── background.js            # Service worker — opens features page on install
-├── content.js               # Main content script — badge rendering, filter bar, auto-scan
+├── content.js               # Main content script — badge rendering, auto-scan
 ├── popup.html               # Extension popup
 ├── popup.js                 # Popup logic — settings, cache management
-├── styles.css               # Injected styles for badges, filter bar, scan button
+├── styles.css               # Injected styles for badges, scan button
 ├── features.html            # Welcome / feature overview page
 ├── icons/                   # Extension icons (16, 48, 128px)
 └── scripts/
