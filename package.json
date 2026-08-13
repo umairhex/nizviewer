@@ -1,0 +1,32 @@
+{
+  "name": "nizviewer",
+  "version": "1.0.0",
+  "description": "Advanced Indeed Job Data Viewer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/umairhex/nizviewer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/umairhex/nizviewer/issues"
+  },
+  "homepage": "https://github.com/umairhex/nizviewer#readme",
+  "scripts": {
+    "lint": "eslint . && web-ext lint",
+    "build": "web-ext build --overwrite-dest --ignore-files audits",
+    "build:chrome": "web-ext build --overwrite-dest --filename \"nizviewer-{version}-chrome.zip\" --ignore-files README.md CONTRIBUTING.md STORE_SUBMISSION.md package.json pnpm-lock.yaml pnpm-workspace.yaml eslint.config.mjs audits icons/logo.svg icons/icon16.png icons/icon48.png icons/icon128.png",
+    "build:firefox": "web-ext build --overwrite-dest --filename \"nizviewer-{version}-firefox.zip\" --ignore-files README.md CONTRIBUTING.md STORE_SUBMISSION.md package.json pnpm-lock.yaml pnpm-workspace.yaml eslint.config.mjs audits icons/logo.svg icons/icon16.png icons/icon48.png icons/icon128.png",
+    "start:firefox": "web-ext run",
+    "format": "prettier --write ."
+  },
+  "engines": {
+    "node": ">=24.0.0",
+    "pnpm": ">=11.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "sharp": "^0.35.3",
+    "web-ext": "^10.6.0"
+  }
+}

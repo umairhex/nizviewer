@@ -1,0 +1,100 @@
+{
+  "manifest_version": 3,
+  "name": "NizViewer",
+  "version": "1.0.0",
+  "description": "Advanced Indeed Job Data Viewer",
+  "author": "NizViewer",
+  "homepage_url": "https://github.com/umairhex/nizviewer",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "nizviewer@umairhex.github.io",
+      "strict_min_version": "128.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  },
+  "icons": {
+    "16": "icons/nizviewer-16.png",
+    "48": "icons/nizviewer-48.png",
+    "128": "icons/nizviewer-128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icons/nizviewer-128.png",
+    "default_title": "NizViewer Settings"
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "service_worker": "background.js"
+  },
+  "host_permissions": [
+    "*://*.indeed.com/*",
+    "*://*.indeed.ca/*",
+    "*://*.indeed.co.uk/*",
+    "*://*.indeed.com.pk/*",
+    "*://*.indeed.co.in/*",
+    "*://*.indeed.com.au/*",
+    "*://*.indeed.fr/*",
+    "*://*.indeed.de/*",
+    "*://*.indeed.nl/*",
+    "*://*.indeed.com.sg/*",
+    "*://*.indeed.ae/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.indeed.com/*",
+        "*://*.indeed.ca/*",
+        "*://*.indeed.co.uk/*",
+        "*://*.indeed.com.pk/*",
+        "*://*.indeed.co.in/*",
+        "*://*.indeed.com.au/*",
+        "*://*.indeed.fr/*",
+        "*://*.indeed.de/*",
+        "*://*.indeed.nl/*",
+        "*://*.indeed.com.sg/*",
+        "*://*.indeed.ae/*"
+      ],
+      "js": [
+        "scripts/browser-polyfill.js",
+        "scripts/techKeywords.js",
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "permissions": [
+    "storage"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "scripts/pageHook.js",
+        "styles.css"
+      ],
+      "matches": [
+        "*://*.indeed.com/*",
+        "*://*.indeed.ca/*",
+        "*://*.indeed.co.uk/*",
+        "*://*.indeed.com.pk/*",
+        "*://*.indeed.co.in/*",
+        "*://*.indeed.com.au/*",
+        "*://*.indeed.fr/*",
+        "*://*.indeed.de/*",
+        "*://*.indeed.nl/*",
+        "*://*.indeed.com.sg/*",
+        "*://*.indeed.ae/*"
+      ]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'"
+  }
+}

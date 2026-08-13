@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+web-ext-artifacts/
+*.zip
+*.xpi
+*.crx
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Local tool workspaces
+.opencode/
+
+# Temporary / debug
+*.log
+*.tmp
+
+# Internal audits
+audits/
