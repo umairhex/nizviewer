@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 
 export default [
+  { ignores: ['dist/**', 'web-ext-artifacts/**'] },
   js.configs.recommended,
   {
     languageOptions: {

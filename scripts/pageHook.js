@@ -613,10 +613,6 @@
             (url.includes('indeed.com') && url.includes('jk=')))
         ) {
           const clone = res.clone();
-          const startTime =
-            typeof window !== 'undefined' && window.performance?.now
-              ? window.performance.now()
-              : Date.now();
           clone
             .json()
             .then((json) => {
@@ -638,11 +634,6 @@
                 }
               } catch {}
               scanObject(json, 'fetch-json', results, seen, 0, 25);
-              const nowTime =
-                typeof window !== 'undefined' && window.performance?.now
-                  ? window.performance.now()
-                  : Date.now();
-              const durationMs = Math.round(nowTime - startTime);
               if (results.length) {
                 post('JOB_DATES', { payload: results });
               }
