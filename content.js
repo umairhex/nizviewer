@@ -412,13 +412,16 @@
 
     let company =
       entry.companyName ||
-      card?.querySelector('[data-testid="company-name"], .companyName, [class*="companyName"]')?.textContent ||
+      card?.querySelector('[data-testid="company-name"], .companyName, [class*="companyName"]')
+        ?.textContent ||
       '';
     company = company.replace(/[\t\r\n]+/g, ' ').trim();
 
     let locationText =
       entry.companyLocation ||
-      card?.querySelector('[data-testid="text-location"], .companyLocation, [class*="companyLocation"]')?.textContent ||
+      card?.querySelector(
+        '[data-testid="text-location"], .companyLocation, [class*="companyLocation"]',
+      )?.textContent ||
       '';
     locationText = locationText.replace(/[\t\r\n]+/g, ' ').trim();
 
@@ -444,11 +447,6 @@
     const jobLink = `${location.origin}/viewjob?jk=${encodeURIComponent(jk)}`;
     const salary = (entry.salary || '').replace(/[\t\r\n]+/g, ' ').trim();
     const experience = (entry.experience || '').replace(/[\t\r\n]+/g, ' ').trim();
-    const shift = (entry.shift || '').replace(/[\t\r\n]+/g, ' ').trim();
-    const benefits = (entry.benefits || '').replace(/[\t\r\n]+/g, ' ').trim();
-    const perks = (entry.perks || '').replace(/[\t\r\n]+/g, ' ').trim();
-    const ageLimit = (entry.ageLimit || '').replace(/[\t\r\n]+/g, ' ').trim();
-    const gender = (entry.gender || '').replace(/[\t\r\n]+/g, ' ').trim();
 
     const cols = [
       role,
@@ -461,11 +459,6 @@
       jobLink,
       salary,
       experience,
-      shift,
-      benefits,
-      perks,
-      ageLimit,
-      gender,
     ];
 
     return cols.join('\t');
@@ -507,12 +500,11 @@
     }
   }
 
-  function setBtnText(btn, iconName, text) {
+  function setBtnIcon(btn, iconName, alt) {
     btn.textContent = '';
     if (iconName && typeof ICONS !== 'undefined' && ICONS[iconName]) {
-      btn.appendChild(inlineIconEl(iconName, 'nizviewer-btn-icon'));
+      btn.appendChild(inlineIconEl(iconName, 'nizviewer-btn-icon', alt || ''));
     }
-    btn.appendChild(document.createTextNode(text));
   }
 
   function renderBadges(jk) {
@@ -727,7 +719,9 @@
           cardContainer.appendChild(actionsContainer);
         }
 
-        let copyBtn = actionsContainer.querySelector(`.nizviewer-copy-btn[data-jk="${escapeJk(jk)}"]`);
+        let copyBtn = actionsContainer.querySelector(
+          `.nizviewer-copy-btn[data-jk="${escapeJk(jk)}"]`,
+        );
         if (!copyBtn) {
           copyBtn = document.createElement('button');
           copyBtn.type = 'button';
@@ -759,12 +753,12 @@
 
         if (!entry?.deepScanned) {
           cardBtn.className = 'nizviewer-card-action badge-fetch-btn';
-          setBtnText(cardBtn, 'bolt', 'Fetch');
+          setBtnIcon(cardBtn, 'bolt', 'Fetch');
           cardBtn.title =
             'Full job details have not been fetched yet. Click to fetch full details & tech stack';
         } else {
           cardBtn.className = 'nizviewer-card-action badge-refetch-btn';
-          setBtnText(cardBtn, 'rotate', 'Refetch Details');
+          setBtnIcon(cardBtn, 'rotate', 'Refetch');
           cardBtn.title = 'Job details fetched. Click to re-fetch latest details';
         }
 
@@ -774,24 +768,34 @@
             ev.stopPropagation();
             ev.preventDefault();
             cardBtn.disabled = true;
-            setBtnText(cardBtn, 'hourglass', 'Fetching...');
+            setBtnIcon(cardBtn, 'hourglass', 'Fetching...');
+            cardBtn.title = 'Fetching full job details...';
             const success = await fetchJobDetailsDirectly(jk);
             if (success) {
-              setBtnText(cardBtn, 'check', 'Fetched');
+              cardBtn.classList.add('badge-fetch-success');
+              setBtnIcon(cardBtn, 'check', 'Fetched');
+              cardBtn.title = 'Job details fetched successfully!';
               setTimeout(() => {
                 cardBtn.disabled = false;
+                cardBtn.classList.remove('badge-fetch-success');
                 cardBtn.className = 'nizviewer-card-action badge-refetch-btn';
-                setBtnText(cardBtn, 'rotate', 'Refetch Details');
+                setBtnIcon(cardBtn, 'rotate', 'Refetch');
+                cardBtn.title = 'Job details fetched. Click to re-fetch latest details';
               }, 1500);
             } else {
-              setBtnText(cardBtn, 'cross', 'Failed');
+              cardBtn.classList.add('badge-fetch-failed');
+              setBtnIcon(cardBtn, 'cross', 'Failed');
+              cardBtn.title = 'Failed to fetch job details. Click to try again.';
               setTimeout(() => {
                 cardBtn.disabled = false;
-                setBtnText(
-                  cardBtn,
-                  entry?.deepScanned ? 'rotate' : 'bolt',
-                  entry?.deepScanned ? 'Refetch Details' : 'Fetch',
-                );
+                cardBtn.classList.remove('badge-fetch-failed');
+                cardBtn.className = entry?.deepScanned
+                  ? 'nizviewer-card-action badge-refetch-btn'
+                  : 'nizviewer-card-action badge-fetch-btn';
+                setBtnIcon(cardBtn, entry?.deepScanned ? 'rotate' : 'bolt', 'Fetch');
+                cardBtn.title = entry?.deepScanned
+                  ? 'Job details fetched. Click to re-fetch latest details'
+                  : 'Full job details have not been fetched yet. Click to fetch full details & tech stack';
               }, 2000);
             }
           });
