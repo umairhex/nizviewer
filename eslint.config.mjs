@@ -30,6 +30,7 @@ export default [
         DEFAULT_BADGE_PREFS: 'readonly',
         location: 'readonly',
         confirm: 'readonly',
+        navigator: 'readonly',
       },
     },
     rules: {

@@ -94,6 +94,44 @@
   border: 1px solid #d1d5db;
 }
 
+/* Fresh Job Card Highlight (Posted within 15 days) */
+.nizviewer-card-fresh,
+.cardOutline.nizviewer-card-fresh,
+[class*='cardOutline'].nizviewer-card-fresh,
+li.nizviewer-card-fresh {
+  background-color: #f0fdf4 !important;
+  border-color: #86efac !important;
+}
+
+.nizviewer-card-fresh:hover,
+.cardOutline.nizviewer-card-fresh:hover,
+[class*='cardOutline'].nizviewer-card-fresh:hover,
+li.nizviewer-card-fresh:hover {
+  background-color: #eafaf1 !important;
+  border-color: #4ade80 !important;
+}
+
+.nizviewer-card-fresh.vjs-highlight,
+.cardOutline.nizviewer-card-fresh.vjs-highlight,
+[class*='cardOutline'].nizviewer-card-fresh.vjs-highlight {
+  background-color: #e6f9ed !important;
+}
+
+.nizviewer-card-fresh .slider_container,
+.nizviewer-card-fresh .slider_list,
+.nizviewer-card-fresh .slider_item,
+.nizviewer-card-fresh [data-testid='fade-in-wrapper'],
+.nizviewer-card-fresh .job_seen_beacon,
+.nizviewer-card-fresh table.mainContentTable,
+.nizviewer-card-fresh td.resultContent {
+  background-color: transparent !important;
+}
+
+/* Old Job Cards Hidden (> 30 days) */
+.nizviewer-card-hidden-old {
+  display: none !important;
+}
+
 /* Shift Badges */
 .badge-shift-night {
   background: #fff1f2;
@@ -272,7 +310,17 @@ td.resultContent,
   background-color: #e2e8f0 !important;
 }
 
-/* Per-Card Action Button (Bottom-Right Anchor, Outline Style) */
+/* Per-Card Action Buttons (Bottom-Right Anchor, Outline Style) */
+.nizviewer-card-actions {
+  position: absolute !important;
+  bottom: 12px !important;
+  right: 14px !important;
+  z-index: 10 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
 .nizviewer-card-action {
   position: absolute !important;
   bottom: 12px !important;
@@ -280,7 +328,8 @@ td.resultContent,
   z-index: 10 !important;
   display: inline-flex !important;
   align-items: center !important;
-  background-color: transparent !important;
+  justify-content: center !important;
+  background-color: #ffffff !important;
   color: #000000 !important;
   border: 1px solid #171717 !important;
   font-family:
@@ -295,6 +344,32 @@ td.resultContent,
   line-height: 1.2 !important;
 }
 
+.nizviewer-card-actions .nizviewer-card-action {
+  position: static !important;
+  bottom: auto !important;
+  right: auto !important;
+}
+
+.nizviewer-copy-btn {
+  padding: 6px 8px !important;
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  box-sizing: border-box !important;
+}
+
+.nizviewer-copy-btn .nizviewer-btn-icon {
+  margin-right: 0 !important;
+  width: 13px !important;
+  height: 13px !important;
+}
+
+.nizviewer-copy-btn.nizviewer-copied {
+  border-color: #16a34a !important;
+  background-color: #f0fdf4 !important;
+  transform: scale(1.08) !important;
+}
+
 .nizviewer-card-action:hover {
   background-color: #f1f5f9 !important;
   transform: translateY(-1px) scale(1.02) !important;
@@ -305,8 +380,6 @@ td.resultContent,
   opacity: 0.75 !important;
   cursor: wait !important;
 }
-
-
 
 /* Wrapper */
 .badge-wrapper {
@@ -319,7 +392,6 @@ td.resultContent,
   margin-bottom: 4px !important;
   animation: fadeInBadge 0.2s ease !important;
 }
-
 
 /* Hide Indeed UI chrome that conflicts with the extension */
 .dislike-tap-target,

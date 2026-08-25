@@ -3,7 +3,7 @@
   function getFreshnessTier(daysAgo) {
     if (daysAgo <= 7) {
       return 'fresh';
-    } else if (daysAgo <= 14) {
+    } else if (daysAgo <= 15) {
       return 'recent';
     } else {
       return 'old';
@@ -50,7 +50,8 @@
     const yearNums = [];
     const rangePat = /(\d+(?:\.\d+)?)\s*(?:to|[-–—])\s*(\d+(?:\.\d+)?)\s*(?:year|yr)s?/gi;
     for (const m of text.matchAll(rangePat)) yearNums.push(parseFloat(m[1]), parseFloat(m[2]));
-    const orMorePat = /(?:at\s+least|minimum\s+of|min)\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:or)?\s*more\s*(?:year|yr)s?/gi;
+    const orMorePat =
+      /(?:at\s+least|minimum\s+of|min)\s*(\d+(?:\.\d+)?)|(\d+(?:\.\d+)?)\s*(?:or)?\s*more\s*(?:year|yr)s?/gi;
     for (const m of text.matchAll(orMorePat)) {
       const val = parseFloat(m[1] || m[2]);
       if (!isNaN(val)) yearNums.push(val);
@@ -62,12 +63,18 @@
       const st = Math.max(0, exM.index - 60);
       const en = Math.min(text.length, exM.index + 80);
       const ctx = text.substring(st, en).toLowerCase();
-      if (/\b(?:exp|experience|required|requirements|minimum|min|at\s+least|plus|prefer)\b/.test(ctx)) yearNums.push(val);
+      if (
+        /\b(?:exp|experience|required|requirements|minimum|min|at\s+least|plus|prefer)\b/.test(ctx)
+      )
+        yearNums.push(val);
     }
     if (yearNums.length > 0) {
-      const valid = Array.from(new Set(yearNums.filter((n) => n >= 0.5 && n <= 25))).sort((a, b) => a - b);
+      const valid = Array.from(new Set(yearNums.filter((n) => n >= 0.5 && n <= 25))).sort(
+        (a, b) => a - b,
+      );
       if (valid.length > 0) {
-        const mn = valid[0], mx = valid[valid.length - 1];
+        const mn = valid[0],
+          mx = valid[valid.length - 1];
         return mn === mx ? `${mn}+ yrs` : `${mn}\u2013${mx} yrs`;
       }
     }
@@ -389,6 +396,117 @@
     return img;
   }
 
+  function getJobDataForClipboard(jk) {
+    const entry = cache[jk] || {};
+    const link = document.querySelector(`${SELECTORS.jobCardLink}[data-jk="${escapeJk(jk)}"]`);
+    const card =
+      link?.closest('.cardOutline, [class*="cardOutline"], .tapItem, [data-testid="jobListing"]') ||
+      link?.closest('[class*="job_seen_beacon"], li');
+
+    let role =
+      link?.querySelector('span[id^="jobTitle"], [data-testid="jobTitle"]')?.textContent ||
+      link?.textContent ||
+      link?.getAttribute('aria-label')?.replace(/^full details of\s+/i, '') ||
+      '';
+    role = role.replace(/[\t\r\n]+/g, ' ').trim();
+
+    let company =
+      entry.companyName ||
+      card?.querySelector('[data-testid="company-name"], .companyName, [class*="companyName"]')?.textContent ||
+      '';
+    company = company.replace(/[\t\r\n]+/g, ' ').trim();
+
+    let locationText =
+      entry.companyLocation ||
+      card?.querySelector('[data-testid="text-location"], .companyLocation, [class*="companyLocation"]')?.textContent ||
+      '';
+    locationText = locationText.replace(/[\t\r\n]+/g, ' ').trim();
+
+    let dateText = '';
+    if (entry.datePostedIso) {
+      const d = new Date(entry.datePostedIso);
+      if (!isNaN(d.getTime())) {
+        dateText = d.toISOString().split('T')[0];
+      }
+    }
+    if (!dateText) {
+      const dateEl = card?.querySelector(
+        '.nizviewer-info-row.badge-fresh .nizviewer-info-value, .nizviewer-info-row.badge-recent .nizviewer-info-value, .nizviewer-info-row.badge-old .nizviewer-info-value, [data-testid="myJobsStateDate"], .date',
+      );
+      if (dateEl) {
+        dateText = dateEl.textContent.replace(/[\t\r\n]+/g, ' ').trim();
+      }
+    }
+
+    const workSetup = (entry.workSetup || '').replace(/[\t\r\n]+/g, ' ').trim();
+    const jobType = (entry.jobType || '').replace(/[\t\r\n]+/g, ' ').trim();
+    const degree = (entry.degree || '').replace(/[\t\r\n]+/g, ' ').trim();
+    const jobLink = `${location.origin}/viewjob?jk=${encodeURIComponent(jk)}`;
+    const salary = (entry.salary || '').replace(/[\t\r\n]+/g, ' ').trim();
+    const experience = (entry.experience || '').replace(/[\t\r\n]+/g, ' ').trim();
+    const shift = (entry.shift || '').replace(/[\t\r\n]+/g, ' ').trim();
+    const benefits = (entry.benefits || '').replace(/[\t\r\n]+/g, ' ').trim();
+    const perks = (entry.perks || '').replace(/[\t\r\n]+/g, ' ').trim();
+    const ageLimit = (entry.ageLimit || '').replace(/[\t\r\n]+/g, ' ').trim();
+    const gender = (entry.gender || '').replace(/[\t\r\n]+/g, ' ').trim();
+
+    const cols = [
+      role,
+      company,
+      locationText,
+      dateText,
+      workSetup,
+      jobType,
+      degree,
+      jobLink,
+      salary,
+      experience,
+      shift,
+      benefits,
+      perks,
+      ageLimit,
+      gender,
+    ];
+
+    return cols.join('\t');
+  }
+
+  async function copyJobData(jk, btn) {
+    const rowData = getJobDataForClipboard(jk);
+    let success = false;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(rowData);
+        success = true;
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = rowData;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        textarea.remove();
+        success = true;
+      }
+    } catch (err) {
+      console.error('[NizViewer] Failed to copy to clipboard:', err);
+    }
+
+    if (success && btn) {
+      btn.classList.add('nizviewer-copied');
+      btn.textContent = '';
+      btn.appendChild(inlineIconEl('check', 'nizviewer-btn-icon', 'Copied'));
+      btn.title = 'Copied to clipboard!';
+      setTimeout(() => {
+        btn.classList.remove('nizviewer-copied');
+        btn.textContent = '';
+        btn.appendChild(inlineIconEl('copy', 'nizviewer-btn-icon', 'Copy'));
+        btn.title = 'Copy job details for Google Sheets';
+      }, 1500);
+    }
+  }
+
   function setBtnText(btn, iconName, text) {
     btn.textContent = '';
     if (iconName && typeof ICONS !== 'undefined' && ICONS[iconName]) {
@@ -399,6 +517,34 @@
 
   function renderBadges(jk) {
     const entry = cache[jk];
+    const link = document.querySelector(`${SELECTORS.jobCardLink}[data-jk="${escapeJk(jk)}"]`);
+    const jobCard =
+      link?.closest('.cardOutline, [class*="cardOutline"], .tapItem, [data-testid="jobListing"]') ||
+      link?.closest('[class*="job_seen_beacon"], li');
+    const jobItem = link?.closest('li, [data-testid="jobListing"]') || jobCard;
+
+    if (jobCard || jobItem) {
+      let isFresh = false;
+      let isOldHidden = false;
+      if (extensionEnabled && entry?.datePostedIso) {
+        const date = new Date(entry.datePostedIso);
+        const diffTime = Math.abs(Date.now() - date.getTime());
+        const daysAgo = Math.floor(diffTime / 864e5);
+        if (!isNaN(daysAgo)) {
+          if (daysAgo <= 15) {
+            isFresh = true;
+          } else if (daysAgo > 30) {
+            isOldHidden = true;
+          }
+        }
+      }
+      jobCard?.classList.toggle('nizviewer-card-fresh', isFresh);
+      jobItem?.classList.toggle('nizviewer-card-hidden-old', isOldHidden);
+      if (jobCard && jobCard !== jobItem) {
+        jobCard.classList.toggle('nizviewer-card-hidden-old', isOldHidden);
+      }
+    }
+
     const wrapper = ensureBadgeWrapper(jk);
     if (!wrapper) return;
     const stateHash = JSON.stringify({
@@ -566,14 +712,49 @@
           cardContainer.style.position = 'relative';
         }
 
-        let cardBtn = cardContainer.querySelector(
-          `.nizviewer-card-action[data-jk="${escapeJk(jk)}"]`,
+        const directLegacyBtn = cardContainer.querySelector(
+          `:scope > .nizviewer-card-action[data-jk="${escapeJk(jk)}"]`,
+        );
+        if (directLegacyBtn) directLegacyBtn.remove();
+
+        let actionsContainer = cardContainer.querySelector(
+          `.nizviewer-card-actions[data-jk="${escapeJk(jk)}"]`,
+        );
+        if (!actionsContainer) {
+          actionsContainer = document.createElement('div');
+          actionsContainer.className = 'nizviewer-card-actions';
+          actionsContainer.setAttribute('data-jk', jk);
+          cardContainer.appendChild(actionsContainer);
+        }
+
+        let copyBtn = actionsContainer.querySelector(`.nizviewer-copy-btn[data-jk="${escapeJk(jk)}"]`);
+        if (!copyBtn) {
+          copyBtn = document.createElement('button');
+          copyBtn.type = 'button';
+          copyBtn.className = 'nizviewer-card-action nizviewer-copy-btn';
+          copyBtn.setAttribute('data-jk', jk);
+          copyBtn.title = 'Copy job details for Google Sheets';
+          copyBtn.appendChild(inlineIconEl('copy', 'nizviewer-btn-icon', 'Copy'));
+          actionsContainer.appendChild(copyBtn);
+        }
+
+        if (!copyBtn.__nizBound) {
+          copyBtn.__nizBound = true;
+          copyBtn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            ev.preventDefault();
+            copyJobData(jk, copyBtn);
+          });
+        }
+
+        let cardBtn = actionsContainer.querySelector(
+          `.nizviewer-card-action.badge-fetch-btn[data-jk="${escapeJk(jk)}"], .nizviewer-card-action.badge-refetch-btn[data-jk="${escapeJk(jk)}"]`,
         );
         if (!cardBtn) {
           cardBtn = document.createElement('button');
           cardBtn.type = 'button';
           cardBtn.setAttribute('data-jk', jk);
-          cardContainer.appendChild(cardBtn);
+          actionsContainer.appendChild(cardBtn);
         }
 
         if (!entry?.deepScanned) {
@@ -744,6 +925,15 @@
   function renderAllVisible() {
     pruneCache();
 
+    if (!extensionEnabled) {
+      document.querySelectorAll('.nizviewer-card-fresh').forEach((el) => {
+        el.classList.remove('nizviewer-card-fresh');
+      });
+      document.querySelectorAll('.nizviewer-card-hidden-old').forEach((el) => {
+        el.classList.remove('nizviewer-card-hidden-old');
+      });
+    }
+
     const allWrappers = document.querySelectorAll('.badge-wrapper');
     for (const w of allWrappers) {
       const wJk = w.getAttribute('data-jk');
@@ -774,7 +964,6 @@
     if (jks.length) {
       window.postMessage({ source: 'nizviewer', type: 'INTERESTED_JKS', jks }, location.origin);
     }
-
   }
   function isDetailPanelMatchingJk(jk) {
     const activeVjk = new URL(window.location.href).searchParams.get('vjk');
@@ -975,50 +1164,71 @@
             if (!item.jk) continue;
             const existing = cache[item.jk];
             if (existing?.deepScanned && !item.deepScanned) continue;
-            
+
             let shift = item.shift ?? existing?.shift;
             let workSetup = item.workSetup ?? existing?.workSetup;
             let experience = item.experience ?? existing?.experience;
 
             if (!item.deepScanned && item.fullText) {
-                const text = item.fullText;
-                let taxoShift, taxoExp;
-                if (Array.isArray(item.taxoAttrs)) {
-                   for (const group of item.taxoAttrs) {
-                     if (!group || typeof group !== 'object') continue;
-                     const gl = (group.label || '').toLowerCase();
-                     if ((gl === 'shifts' || gl === 'schedules') && Array.isArray(group.attributes)) {
-                       const labels = group.attributes.map(a => typeof a.label === 'string' ? a.label.trim() : '').filter(Boolean);
-                       if (labels.length > 0) taxoShift = labels.join(', ');
-                     }
-                     if ((gl === 'experience' || gl === 'experience level') && Array.isArray(group.attributes)) {
-                       const labels = group.attributes.map(a => typeof a.label === 'string' ? a.label.trim() : '').filter(Boolean);
-                       if (labels.length > 0) taxoExp = labels.join(', ');
-                     }
-                   }
+              const text = item.fullText;
+              let taxoShift, taxoExp;
+              if (Array.isArray(item.taxoAttrs)) {
+                for (const group of item.taxoAttrs) {
+                  if (!group || typeof group !== 'object') continue;
+                  const gl = (group.label || '').toLowerCase();
+                  if ((gl === 'shifts' || gl === 'schedules') && Array.isArray(group.attributes)) {
+                    const labels = group.attributes
+                      .map((a) => (typeof a.label === 'string' ? a.label.trim() : ''))
+                      .filter(Boolean);
+                    if (labels.length > 0) taxoShift = labels.join(', ');
+                  }
+                  if (
+                    (gl === 'experience' || gl === 'experience level') &&
+                    Array.isArray(group.attributes)
+                  ) {
+                    const labels = group.attributes
+                      .map((a) => (typeof a.label === 'string' ? a.label.trim() : ''))
+                      .filter(Boolean);
+                    if (labels.length > 0) taxoExp = labels.join(', ');
+                  }
                 }
-                if (!shift) {
-                  shift = classifyShift(text);
-                  if (!shift && taxoShift) shift = classifyShift(taxoShift) || taxoShift;
-                }
-                if (!workSetup) {
-                  if (/\b(?:permanent[\s-]+remote|remote|wfh|work[\s-]+from[\s-]+home|home[\s-]*based|remotely|virtual)\b/i.test(text)) workSetup = 'Remote';
-                  else if (/\b(?:hybrid|hyrbid|mixed|work[\s-]+from[\s-]+office)\b/i.test(text)) workSetup = 'Hybrid';
-                  else if (/\b(?:on[\s-]?site|in[\s-]*office|in[\s-]*person|onsite|on[\s-]*site)\b/i.test(text)) workSetup = 'Onsite';
-                  if (!workSetup && /\bno\s+remote\b/i.test(text)) workSetup = 'Onsite';
+              }
+              if (!shift) {
+                shift = classifyShift(text);
+                if (!shift && taxoShift) shift = classifyShift(taxoShift) || taxoShift;
+              }
+              if (!workSetup) {
+                if (
+                  /\b(?:permanent[\s-]+remote|remote|wfh|work[\s-]+from[\s-]+home|home[\s-]*based|remotely|virtual)\b/i.test(
+                    text,
+                  )
+                )
+                  workSetup = 'Remote';
+                else if (/\b(?:hybrid|hyrbid|mixed|work[\s-]+from[\s-]+office)\b/i.test(text))
+                  workSetup = 'Hybrid';
+                else if (
+                  /\b(?:on[\s-]?site|in[\s-]*office|in[\s-]*person|onsite|on[\s-]*site)\b/i.test(
+                    text,
+                  )
+                )
+                  workSetup = 'Onsite';
+                if (!workSetup && /\bno\s+remote\b/i.test(text)) workSetup = 'Onsite';
+              }
+              if (!experience) {
+                if (typeof item.experienceLevel === 'string' && item.experienceLevel.length > 1) {
+                  experience = item.experienceLevel;
+                } else if (
+                  typeof item.yearsExperienceRequired === 'number' &&
+                  item.yearsExperienceRequired > 0
+                ) {
+                  experience = `${item.yearsExperienceRequired}+ yrs`;
+                } else if (taxoExp) {
+                  experience = taxoExp;
                 }
                 if (!experience) {
-                  if (typeof item.experienceLevel === 'string' && item.experienceLevel.length > 1) {
-                    experience = item.experienceLevel;
-                  } else if (typeof item.yearsExperienceRequired === 'number' && item.yearsExperienceRequired > 0) {
-                    experience = `${item.yearsExperienceRequired}+ yrs`;
-                  } else if (taxoExp) {
-                    experience = taxoExp;
-                  }
-                  if (!experience) {
-                    experience = extractExperienceFromText(text);
-                  }
+                  experience = extractExperienceFromText(text);
                 }
+              }
             }
 
             const updated = {
