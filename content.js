@@ -419,8 +419,22 @@
       parent.insertBefore(wrapper, description);
       return wrapper;
     }
+    const card = link.closest(
+      '.cardOutline, [class*="cardOutline"], .tapItem, [data-testid="jobListing"], [class*="job_seen_beacon"], li',
+    );
     const title = link.closest('.jobTitle, [data-testid="jobTitle"]') || link;
-    const parent = title.parentNode;
+    const identityNodes = [
+      title,
+      card?.querySelector('[data-testid="company-name"], .companyName, [class*="companyName"]'),
+      card?.querySelector('[data-testid="text-location"], .companyLocation, [class*="companyLocation"]'),
+    ].filter((node) => node && card?.contains(node));
+    let insertionAnchor = identityNodes[0] || title;
+    for (const node of identityNodes.slice(1)) {
+      if (insertionAnchor.compareDocumentPosition(node) & 4) {
+        insertionAnchor = node;
+      }
+    }
+    const parent = insertionAnchor.parentNode;
     if (!parent) return null;
 
     const allWrappers = parent.querySelectorAll('.badge-wrapper');
@@ -432,14 +446,16 @@
 
     let wrapper = parent.querySelector(`.badge-wrapper[data-jk="${jk}"]`);
     if (wrapper) {
-      if (wrapper.previousSibling !== title) parent.insertBefore(wrapper, title.nextSibling);
+      if (wrapper.parentNode !== parent || wrapper.previousSibling !== insertionAnchor) {
+        parent.insertBefore(wrapper, insertionAnchor.nextSibling);
+      }
       return wrapper;
     }
 
     wrapper = document.createElement('div');
     wrapper.className = 'badge-wrapper';
     wrapper.setAttribute('data-jk', jk);
-    parent.insertBefore(wrapper, title.nextSibling);
+    parent.insertBefore(wrapper, insertionAnchor.nextSibling);
     return wrapper;
   }
   function getShiftClass(shift) {
