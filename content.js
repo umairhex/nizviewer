@@ -754,7 +754,7 @@
         jobCard.classList.toggle('nizviewer-card-hidden-old', isOldHidden);
         jobCard.classList.toggle('nizviewer-experience-hidden', isExperienceHidden);
       }
-      applyCardColor(jobCard || jobItem, entry, daysAgo, experienceYears);
+      applyCardColor([jobCard, jobItem].filter(Boolean), entry, daysAgo, experienceYears);
     }
 
     const wrapper = ensureBadgeWrapper(jk);
@@ -1169,13 +1169,16 @@
     return parseExperienceValue(text);
   }
 
-  function applyCardColor(card, entry, daysAgo, experienceYears) {
-    if (!card) return;
+  function applyCardColor(cards, entry, daysAgo, experienceYears) {
+    if (!cards.length) return;
     const match = normalizeCardColorRules(badgePrefs.cardColorRules).find((rule) =>
       compareColorRule(rule.field === 'age' ? daysAgo : experienceYears, rule.operator, rule.value),
     );
-    if (match) card.style.setProperty('--nizviewer-card-color', match.color);
-    else card.style.removeProperty('--nizviewer-card-color');
+    for (const card of cards) {
+      card.classList.toggle('nizviewer-card-colored', Boolean(match));
+      if (match) card.style.setProperty('--nizviewer-card-color', match.color);
+      else card.style.removeProperty('--nizviewer-card-color');
+    }
   }
 
   const directDetailFetches = new Map();
@@ -1779,6 +1782,9 @@
       });
       document.querySelectorAll('[style*="--nizviewer-card-color"]').forEach((el) => {
         el.style.removeProperty('--nizviewer-card-color');
+      });
+      document.querySelectorAll('.nizviewer-card-colored').forEach((el) => {
+        el.classList.remove('nizviewer-card-colored');
       });
       document.querySelectorAll('.nizviewer-filter-hidden').forEach((el) => {
         el.classList.remove('nizviewer-filter-hidden');

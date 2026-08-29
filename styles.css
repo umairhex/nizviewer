@@ -349,6 +349,19 @@
 [data-testid="jobListing"][style*="--nizviewer-card-color"] {
   background-color: var(--nizviewer-card-color) !important;
 }
+.nizviewer-card-colored {
+  background-color: var(--nizviewer-card-color) !important;
+}
+/* Indeed wraps each result in additional white surfaces. Let the selected
+   card color show through those structural layers while preserving controls. */
+.nizviewer-card-colored > .job_seen_beacon,
+.nizviewer-card-colored [class*="job_seen_beacon"],
+.nizviewer-card-colored > table.jobCard_mainContent,
+.nizviewer-card-colored table.jobCard_mainContent,
+.nizviewer-card-colored > .jobCard_mainContent,
+.nizviewer-card-colored .jobCard_mainContent {
+  background-color: transparent !important;
+}
 .nizviewer-feed-toolbar {
   box-sizing: border-box !important;
   margin: 0 0 16px !important;
