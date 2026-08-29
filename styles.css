@@ -215,6 +215,33 @@
   font-size: 11px !important;
   line-height: 1.45 !important;
 }
+.nizviewer-apply-email {
+  display: inline-flex !important;
+  align-items: center !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  margin-top: 8px !important;
+  padding: 6px 9px !important;
+  border: 1px solid var(--nv-accent) !important;
+  border-radius: 6px !important;
+  background: var(--nv-accent) !important;
+  color: #fff !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  overflow-wrap: anywhere !important;
+  text-decoration: none !important;
+}
+.nizviewer-apply-email:hover,
+.nizviewer-apply-email:focus-visible {
+  filter: brightness(0.92);
+}
+.nizviewer-apply-subject {
+  margin: 6px 0 0 !important;
+  color: var(--nv-muted) !important;
+  font-size: 12px !important;
+  line-height: 1.45 !important;
+  overflow-wrap: anywhere !important;
+}
 .nizviewer-unavailable-note {
   margin: 8px 0 0 !important;
   color: var(--nv-muted) !important;
@@ -377,42 +404,6 @@
 .nizviewer-sortable-list {
   display: flex !important;
   flex-direction: column !important;
-}
-#nizviewer-comparison {
-  margin-top: 12px !important;
-  padding-top: 12px !important;
-  border-top: 1px solid var(--nv-border) !important;
-}
-#nizviewer-comparison[hidden] {
-  display: none !important;
-}
-#nizviewer-comparison h3 {
-  margin: 0 0 8px !important;
-  font-size: 14px !important;
-}
-.nizviewer-comparison-grid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
-  gap: 8px !important;
-}
-.nizviewer-comparison-grid article {
-  padding: 9px !important;
-  border: 1px solid var(--nv-border) !important;
-  border-radius: 7px !important;
-  background: var(--nv-surface) !important;
-}
-.nizviewer-comparison-grid h4 {
-  margin: 0 0 6px !important;
-  font-size: 13px !important;
-}
-.nizviewer-comparison-grid p {
-  margin: 3px 0 !important;
-  color: var(--nv-muted) !important;
-  font-size: 11px !important;
-}
-.nizviewer-comparison-grid a {
-  color: var(--nv-accent) !important;
-  font-size: 12px !important;
 }
 table.mainContentTable,
 table.jobCard_mainContent,

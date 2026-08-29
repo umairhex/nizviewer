@@ -43,7 +43,7 @@
   };
   const CACHE_KEY = 'nizViewerCache';
   const CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
-  const DETAIL_SCAN_VERSION = 2;
+  const DETAIL_SCAN_VERSION = 3;
   const DETAIL_FETCH_TIMEOUT_MS = 15000;
   const FEED_FETCH_CONCURRENCY = 2;
   const FEED_FETCH_MAX_ATTEMPTS = 3;
@@ -51,7 +51,6 @@
   let cache = {};
   let badgePrefs = { ...DEFAULT_BADGE_PREFS };
   const expandedJobs = new Set();
-  const comparedJobs = new Set();
   const fetchStates = new Map();
   let revealOldJobs = false;
   const feedView = {
@@ -290,6 +289,22 @@
     else if (/\bmales? only\b/i.test(text)) gender = 'Males Only';
     else if (/\bfemales? only\b/i.test(text)) gender = 'Females Only';
 
+    const emailPattern = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
+    let applicationContext = '';
+    let applyEmail;
+    for (const match of Array.from(text.matchAll(emailPattern)).reverse()) {
+      const context = text.slice(Math.max(0, match.index - 260), match.index + 420);
+      if (/(?:apply|application|send|submit|resume|cv|subject|interested candidates)/i.test(context)) {
+        applyEmail = match[0].toLowerCase();
+        applicationContext = context;
+        break;
+      }
+    }
+    const subjectMatch = applicationContext.match(
+      /subject(?:\s+(?:header|line))?\s*[:=-]\s*["“']?([A-Z0-9][A-Z0-9 ,_+./&()-]{4,120}?)["”']?(?=\.|\s*$)/i,
+    );
+    const applySubject = subjectMatch?.[1]?.trim().replace(/\s+/g, ' ');
+
     return {
       shift,
       experience,
@@ -302,6 +317,8 @@
       perks,
       ageLimit,
       gender,
+      applyEmail,
+      applySubject,
     };
   }
   function debounce(fn, ms) {
@@ -544,6 +561,8 @@
       techStack: (entry.techStack || '').replace(/[\t\r\n]+/g, ' ').trim(),
       benefits: (entry.benefits || '').replace(/[\t\r\n]+/g, ' ').trim(),
       perks: (entry.perks || '').replace(/[\t\r\n]+/g, ' ').trim(),
+      applyEmail: (entry.applyEmail || '').replace(/[\t\r\n]+/g, ' ').trim(),
+      applySubject: (entry.applySubject || '').replace(/[\t\r\n]+/g, ' ').trim(),
     };
   }
 
@@ -563,6 +582,8 @@
       ['Tech Stack', 'techStack', badgePrefs.techStack],
       ['Benefits', 'benefits', badgePrefs.benefits],
       ['Perks', 'perks', badgePrefs.perks],
+      ['Apply email', 'applyEmail', true],
+      ['Email subject', 'applySubject', true],
     ];
     return columns.filter((column) => column[2]);
   }
@@ -718,13 +739,14 @@
       jt: entry?.jobType,
       dg: entry?.degree,
       ts: entry?.techStack,
+      ae: entry?.applyEmail,
+      as: entry?.applySubject,
       be: entry?.benefits,
       pe: entry?.perks,
       ag: entry?.ageLimit,
       ge: entry?.gender,
       f: fetchStates.get(jk),
       x: expandedJobs.has(jk),
-      c: comparedJobs.has(jk),
       p: badgePrefs,
     });
     if (wrapper.getAttribute('data-rendered-hash') === stateHash) return;
@@ -909,6 +931,27 @@
             unavailable.textContent = `Not detected: ${missing.join(', ')}.`;
             card.appendChild(unavailable);
           }
+          if (entry.applyEmail) {
+            const apply = document.createElement('a');
+            apply.className = 'nizviewer-apply-email';
+            const params = entry.applySubject
+              ? `?subject=${encodeURIComponent(entry.applySubject)}`
+              : '';
+            apply.href = `mailto:${entry.applyEmail}${params}`;
+            apply.textContent = `Apply by email: ${entry.applyEmail}`;
+            apply.addEventListener('click', (ev) => ev.stopPropagation());
+            apply.title = entry.applySubject
+              ? `Open an email addressed to ${entry.applyEmail} with subject “${entry.applySubject}”`
+              : `Open an email addressed to ${entry.applyEmail}`;
+            apply.setAttribute('aria-label', apply.title);
+            card.appendChild(apply);
+            if (entry.applySubject) {
+              const subject = document.createElement('p');
+              subject.className = 'nizviewer-apply-subject';
+              subject.textContent = `Subject: ${entry.applySubject}`;
+              card.appendChild(subject);
+            }
+          }
           const source = document.createElement('p');
           source.className = 'nizviewer-source-note';
           source.textContent =
@@ -1060,23 +1103,6 @@
           });
         }
 
-        const compareBtn = document.createElement('button');
-        compareBtn.type = 'button';
-        compareBtn.className = `nizviewer-text-action${comparedJobs.has(jk) ? ' is-selected' : ''}`;
-        compareBtn.textContent = comparedJobs.has(jk) ? 'Comparing' : 'Compare';
-        compareBtn.setAttribute('aria-pressed', String(comparedJobs.has(jk)));
-        compareBtn.addEventListener('click', (ev) => {
-          ev.stopPropagation();
-          ev.preventDefault();
-          if (comparedJobs.has(jk)) comparedJobs.delete(jk);
-          else if (comparedJobs.size < 4) comparedJobs.add(jk);
-          else announce('You can compare up to four jobs at a time.');
-          wrapper.removeAttribute('data-rendered-hash');
-          renderBadges(jk);
-          renderComparison();
-          updateFeedSummary();
-        });
-        actionsContainer.appendChild(compareBtn);
       }
     } finally {
       setTimeout(() => {
@@ -1130,6 +1156,8 @@
         perks,
         ageLimit,
         gender,
+        applyEmail,
+        applySubject,
       } = parseDetailHtml(detailText);
 
       cache[jk] = {
@@ -1145,6 +1173,8 @@
         perks: perks ?? existing.perks,
         ageLimit: ageLimit ?? existing.ageLimit,
         gender: gender ?? existing.gender,
+        applyEmail: applyEmail ?? existing.applyEmail,
+        applySubject: applySubject ?? existing.applySubject,
         savedAt: Date.now(),
         deepScanned: true,
         detailScanVersion: DETAIL_SCAN_VERSION,
@@ -1269,6 +1299,8 @@
       perks,
       ageLimit,
       gender,
+      applyEmail,
+      applySubject,
     } = parseDetailHtml(text);
 
     let changed = false;
@@ -1312,6 +1344,14 @@
     }
     if (gender && !existing?.gender) {
       updated.gender = gender;
+      changed = true;
+    }
+    if (applyEmail && !existing?.applyEmail) {
+      updated.applyEmail = applyEmail;
+      changed = true;
+    }
+    if (applySubject && !existing?.applySubject) {
+      updated.applySubject = applySubject;
       changed = true;
     }
 
@@ -1552,7 +1592,6 @@
     for (const [action, label] of [
       ['copy', 'Copy visible'],
       ['export', 'Export CSV'],
-      ['compare', 'Compare (0)'],
       ['reveal', 'Show older jobs'],
       ['reset', 'Reset filters'],
     ]) {
@@ -1563,10 +1602,6 @@
       actions.appendChild(button);
     }
     toolbar.appendChild(actions);
-    const comparison = document.createElement('div');
-    comparison.id = 'nizviewer-comparison';
-    comparison.hidden = true;
-    toolbar.appendChild(comparison);
 
     toolbar.addEventListener('input', (event) => {
       const key = event.target?.dataset?.feedKey;
@@ -1587,11 +1622,6 @@
       const action = event.target?.dataset?.action;
       if (action === 'copy') copyVisibleJobs();
       if (action === 'export') exportVisibleJobs();
-      if (action === 'compare') {
-        const panel = document.getElementById('nizviewer-comparison');
-        if (panel && !panel.hidden) panel.hidden = true;
-        else renderComparison(true);
-      }
       if (action === 'reveal') {
         revealOldJobs = !revealOldJobs;
         renderAllVisible();
@@ -1614,45 +1644,6 @@
     return toolbar;
   }
 
-  function renderComparison(forceOpen = false) {
-    const panel = document.getElementById('nizviewer-comparison');
-    if (!panel) return;
-    const jobs = Array.from(comparedJobs).filter((jk) => cache[jk]);
-    panel.replaceChildren();
-    panel.hidden = jobs.length === 0 || (!forceOpen && panel.hidden);
-    if (jobs.length === 0) return;
-    const title = document.createElement('h3');
-    title.textContent = `Comparing ${jobs.length} job${jobs.length === 1 ? '' : 's'}`;
-    panel.appendChild(title);
-    const grid = document.createElement('div');
-    grid.className = 'nizviewer-comparison-grid';
-    for (const jk of jobs) {
-      const record = getJobRecord(jk);
-      const card = document.createElement('article');
-      const heading = document.createElement('h4');
-      heading.textContent = record.role || 'Untitled job';
-      card.appendChild(heading);
-      for (const value of [
-        record.company,
-        record.salary || 'Salary not found',
-        record.workSetup || 'Setup not found',
-        record.experience || 'Experience not found',
-      ]) {
-        const line = document.createElement('p');
-        line.textContent = value;
-        card.appendChild(line);
-      }
-      const link = document.createElement('a');
-      link.href = record.link;
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-      link.textContent = 'Open full job';
-      card.appendChild(link);
-      grid.appendChild(card);
-    }
-    panel.appendChild(grid);
-  }
-
   function updateFeedSummary() {
     const summary = document.getElementById('nizviewer-feed-summary');
     if (!summary) return;
@@ -1667,8 +1658,6 @@
     ).length;
     const visible = getVisibleFeedJks().length;
     summary.textContent = `${visible} visible · ${full} full · ${pending} pending${failed ? ` · ${failed} failed` : ''}${hidden ? ` · ${hidden} older hidden` : ''}`;
-    const compare = document.querySelector('#nizviewer-feed-toolbar [data-action="compare"]');
-    if (compare) compare.textContent = `Compare (${comparedJobs.size})`;
     const reveal = document.querySelector('#nizviewer-feed-toolbar [data-action="reveal"]');
     if (reveal) {
       reveal.hidden = badgePrefs.hideOldJobs !== true;
@@ -1880,6 +1869,8 @@
           perks,
           ageLimit,
           gender,
+          applyEmail,
+          applySubject,
         } = parseDetailHtml(combinedText);
         const needsUpdate =
           (salary && salary !== existing.salary) ||
@@ -1893,7 +1884,9 @@
           (benefits && benefits !== existing.benefits) ||
           (perks && perks !== existing.perks) ||
           (ageLimit && ageLimit !== existing.ageLimit) ||
-          (gender && gender !== existing.gender);
+          (gender && gender !== existing.gender) ||
+          (applyEmail && applyEmail !== existing.applyEmail) ||
+          (applySubject && applySubject !== existing.applySubject);
         if (needsUpdate || !existing.deepScanned) {
           cache[jk] = {
             ...existing,
@@ -1908,6 +1901,8 @@
             perks: perks ?? existing.perks,
             ageLimit: ageLimit ?? existing.ageLimit,
             gender: gender ?? existing.gender,
+            applyEmail: applyEmail ?? existing.applyEmail,
+            applySubject: applySubject ?? existing.applySubject,
             savedAt: Date.now(),
             deepScanned: true,
             detailScanVersion: DETAIL_SCAN_VERSION,

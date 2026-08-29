@@ -28,7 +28,7 @@ NizViewer reads structured job data and network responses that Indeed sends to t
 
 ## Search and review features
 
-Users can filter extracted jobs by technology, work setup, posting age, salary availability, and experience. They can compare up to four jobs, copy visible rows, and export CSV.
+Users can filter extracted jobs by technology, work setup, posting age, salary availability, and experience. They can copy visible rows and export CSV.
 
 ## Privacy and limitations
 
