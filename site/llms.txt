@@ -5,7 +5,7 @@
 Canonical website: https://umairhex.github.io/nizviewer/
 Source code: https://github.com/umairhex/nizviewer
 Firefox add-on: https://addons.mozilla.org/en-US/firefox/addon/nizviewer-indeed-job-dates/
-Current version: 1.4.0
+Current version: 1.5.3
 
 ## What it does
 
