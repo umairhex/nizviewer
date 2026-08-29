@@ -1,401 +1,444 @@
-/* NizViewer Core Styles */
-:root {
-  --colors-ink: #171717;
-  --colors-canvas: #fafafa;
-  --colors-elevated: #ffffff;
-  --colors-hairline: #ebebeb;
-  --colors-error: #e53e3e;
+/* NizViewer UI — scoped so Indeed controls remain untouched. */
+.badge-wrapper,
+.nizviewer-feed-toolbar {
+  --nv-bg: #fff;
+  --nv-surface: #f7f8fa;
+  --nv-text: #182230;
+  --nv-muted: #526173;
+  --nv-border: #d7dee7;
+  --nv-accent: #2557a7;
+  --nv-success: #1d7a43;
+  --nv-warning: #9a5a00;
+  --nv-danger: #b42318;
+  --nv-focus: #2f6fce;
+  color-scheme: light;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
-
-.nizviewer-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 6px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0;
-  margin-top: 4px;
-  margin-right: 6px;
-  background-color: #ffffff;
-  color: #000000;
-  border: 1px solid #000000;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
-    'Helvetica Neue', sans-serif;
-  cursor: pointer;
-  z-index: 1;
+.badge-wrapper.nizviewer-theme-dark,
+.nizviewer-feed-toolbar.nizviewer-theme-dark {
+  --nv-bg: #18202b;
+  --nv-surface: #222d3a;
+  --nv-text: #f2f5f8;
+  --nv-muted: #bac5d1;
+  --nv-border: #3b4858;
+  --nv-accent: #8bb8ff;
+  --nv-success: #75d39c;
+  --nv-warning: #ffc56e;
+  --nv-danger: #ff9b91;
+  --nv-focus: #9bc2ff;
+  color-scheme: dark;
 }
-
-.nizviewer-badge:hover {
-  background-color: var(--colors-hairline);
-}
-
-@keyframes fadeInBadge {
-  from {
-    opacity: 0;
-    transform: translateY(-2px);
+@media (prefers-color-scheme: dark) {
+  .badge-wrapper.nizviewer-theme-auto,
+  .nizviewer-feed-toolbar.nizviewer-theme-auto {
+    --nv-bg: #18202b;
+    --nv-surface: #222d3a;
+    --nv-text: #f2f5f8;
+    --nv-muted: #bac5d1;
+    --nv-border: #3b4858;
+    --nv-accent: #8bb8ff;
+    --nv-success: #75d39c;
+    --nv-warning: #ffc56e;
+    --nv-danger: #ff9b91;
+    --nv-focus: #9bc2ff;
+    color-scheme: dark;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
-
-/* Job Info Rows (inside tech stack card) */
-.nizviewer-info-row {
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  padding: 6px 0 6px 8px !important;
-  background: transparent !important;
-  border: none !important;
-  border-left: 3px solid currentColor !important;
-  font-size: 12px !important;
+.nizviewer-sr-only {
+  position: fixed !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
-
-.nizviewer-info-label {
-  flex-shrink: 0 !important;
-  min-width: 78px !important;
-  font-size: 10px !important;
-  font-weight: 700 !important;
-  line-height: 1.4 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.4px !important;
-  color: #64748b !important;
+/* Keep result-card identity fields scannable without truncating standalone job pages. */
+:where(.cardOutline, [class*='cardOutline'], .tapItem, [data-testid='jobListing'], [class*='job_seen_beacon'])
+  :where(.jobTitle, [data-testid='jobTitle'], span[id^='jobTitle'], [data-testid='company-name'], .companyName, [class*='companyName'], [data-testid='text-location'], .companyLocation, [class*='companyLocation']) {
+  display: -webkit-box !important;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
 }
-
-.nizviewer-info-value {
-  flex: 1 !important;
-  text-align: right !important;
-  font-weight: 600 !important;
-  line-height: 1.4 !important;
-}
-
-/* Freshness Badges */
-.badge-fresh {
-  background: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-}
-.badge-recent {
-  background: #fffbeb;
-  color: #b45309;
-  border: 1px solid #fde68a;
-}
-.badge-old {
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
-}
-.badge-unknown {
-  background: #f3f4f6;
-  color: #4b5563;
-  border: 1px solid #d1d5db;
-}
-
-/* Fresh Job Card Highlight (Posted within 15 days) */
-.nizviewer-card-fresh,
-.cardOutline.nizviewer-card-fresh,
-[class*='cardOutline'].nizviewer-card-fresh,
-li.nizviewer-card-fresh {
-  background-color: #f0fdf4 !important;
-  border-color: #86efac !important;
-}
-
-.nizviewer-card-fresh:hover,
-.cardOutline.nizviewer-card-fresh:hover,
-[class*='cardOutline'].nizviewer-card-fresh:hover,
-li.nizviewer-card-fresh:hover {
-  background-color: #eafaf1 !important;
-  border-color: #4ade80 !important;
-}
-
-.nizviewer-card-fresh.vjs-highlight,
-.cardOutline.nizviewer-card-fresh.vjs-highlight,
-[class*='cardOutline'].nizviewer-card-fresh.vjs-highlight {
-  background-color: #e6f9ed !important;
-}
-
-.nizviewer-card-fresh .slider_container,
-.nizviewer-card-fresh .slider_list,
-.nizviewer-card-fresh .slider_item,
-.nizviewer-card-fresh [data-testid='fade-in-wrapper'],
-.nizviewer-card-fresh .job_seen_beacon,
-.nizviewer-card-fresh table.mainContentTable,
-.nizviewer-card-fresh td.resultContent {
-  background-color: transparent !important;
-}
-
-/* Old Job Cards Hidden (> 30 days) */
-.nizviewer-card-hidden-old {
-  display: none !important;
-}
-
-/* Shift Badges */
-.badge-shift-night {
-  background: #fff1f2;
-  color: #be123c;
-  border: 1px solid #fecdd3;
-}
-.badge-shift-mid {
-  background: #fffbeb;
-  color: #b45309;
-  border: 1px solid #fde68a;
-}
-.badge-shift-day {
-  background: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
-}
-.badge-shift-rotating {
-  background: #eff6ff;
-  color: #1d4ed8;
-  border: 1px solid #bfdbfe;
-}
-.badge-shift-swing {
-  background: #f5f3ff;
-  color: #6d28d9;
-  border: 1px solid #ddd6fe;
-}
-
-/* Work Setup Badges */
-.badge-setup-remote {
-  background: #f0f9ff;
-  color: #0369a1;
-  border: 1px solid #bae6fd;
-}
-.badge-setup-hybrid {
-  background: #fdf4ff;
-  color: #a21caf;
-  border: 1px solid #f5d0fe;
-}
-.badge-setup-onsite {
-  background: #fafaf9;
-  color: #44403c;
-  border: 1px solid #e7e5e4;
-}
-
-/* Data Category Badges */
-.badge-salary {
-  background: #ecfdf5;
-  color: #047857;
-  border: 1px solid #a7f3d0;
-}
-.badge-experience {
-  background: #fff7ed;
-  color: #c2410c;
-  border: 1px solid #ffedd5;
-}
-.badge-jobtype {
-  background: #f0fdfa;
-  color: #0f766e;
-  border: 1px solid #99f6e4;
-}
-.badge-degree {
-  background: #fefce8;
-  color: #a16207;
-  border: 1px solid #fef08a;
-}
-.badge-benefits {
-  background: #fdf2f8;
-  color: #be185d;
-  border: 1px solid #fbcfe8;
-}
-.badge-perks {
-  background: #ecfeff;
-  color: #0e7490;
-  border: 1px solid #a5f3fc;
-}
-.badge-age {
-  background: #fff1f2;
-  color: #e11d48;
-  border: 1px solid #ffe4e6;
-}
-.badge-gender {
-  background: #f5f3ff;
-  color: #7c3aed;
-  border: 1px solid #ddd6fe;
-}
-
-/* Inline SVG icon inside buttons (data: URIs) */
-.nizviewer-btn-icon {
-  width: 13px !important;
-  height: 13px !important;
-  margin-right: 5px !important;
-  flex-shrink: 0 !important;
-  display: inline-block !important;
-  filter: brightness(0) !important;
-}
-
-/* Tech Stack Card */
-.nizviewer-tech-stack-card,
 .badge-wrapper {
   display: block !important;
   width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  flex: 0 0 100% !important;
+  box-sizing: border-box !important;
+  margin: 6px 0 4px !important;
+  color: var(--nv-text) !important;
+}
+.nizviewer-detail-badge-wrapper {
+  margin: 0 0 12px !important;
+}
+.nizviewer-status {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-height: 24px !important;
+  color: var(--nv-muted) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+.nizviewer-status-dot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 50% !important;
+  background: currentColor !important;
+}
+.nizviewer-status-complete {
+  color: var(--nv-success) !important;
+}
+.nizviewer-status-failed {
+  color: var(--nv-danger) !important;
+}
+.nizviewer-status-loading,
+.nizviewer-status-queued {
+  color: var(--nv-accent) !important;
+}
+.nizviewer-status-loading .nizviewer-status-dot {
+  animation: nizviewerPulse 1s ease-in-out infinite;
+}
+@keyframes nizviewerPulse {
+  50% {
+    opacity: 0.3;
+    transform: scale(0.75);
+  }
+}
+.nizviewer-tech-stack-card {
+  width: 100% !important;
   max-width: 100% !important;
   box-sizing: border-box !important;
-}
-
-.nizviewer-tech-stack-card {
-  margin-top: 6px !important;
   padding: 8px 10px !important;
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
+  background: var(--nv-bg) !important;
+  color: var(--nv-text) !important;
+  border: 1px solid var(--nv-border) !important;
   border-radius: 8px !important;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
 }
-
-/* Force the job-card table out of auto-sizing so its cells don't shrink to content */
-table.mainContentTable,
-table.jobCard_mainContent {
-  width: 100% !important;
-  table-layout: fixed !important;
-}
-
-td.resultContent,
-.badge-wrapper,
-.nizviewer-tech-stack-card {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
 .nizviewer-tech-stack-rows {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 6px 12px !important;
 }
-
-.nizviewer-tech-stack-row {
-  padding: 7px 0 !important;
+.nizviewer-info-row {
+  display: grid !important;
+  grid-template-columns: minmax(72px, auto) minmax(0, 1fr) !important;
+  align-items: baseline !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  padding: 3px 0 3px 7px !important;
+  border-left: 3px solid currentColor !important;
+  background: transparent !important;
+  font-size: 12px !important;
 }
-
-.nizviewer-tech-stack-row + .nizviewer-tech-stack-row,
-.nizviewer-info-row + .nizviewer-tech-stack-row {
-  border-top: 1px solid #e2e8f0 !important;
-}
-
+.nizviewer-info-label,
 .nizviewer-tech-stack-cat {
-  margin-bottom: 5px !important;
-  font-size: 10px !important;
+  color: var(--nv-muted) !important;
+  font-size: 11px !important;
   font-weight: 700 !important;
-  line-height: 1.4 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.4px !important;
-  color: #64748b !important;
+  line-height: 1.45 !important;
+  letter-spacing: 0.02em !important;
 }
-
+.nizviewer-info-value {
+  min-width: 0 !important;
+  color: currentColor !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  line-height: 1.45 !important;
+  overflow-wrap: anywhere !important;
+}
+.badge-fresh,
+.badge-salary,
+.badge-setup-remote {
+  color: var(--nv-success) !important;
+}
+.badge-recent,
+.badge-experience,
+.badge-shift-mid {
+  color: var(--nv-warning) !important;
+}
+.badge-old,
+.badge-shift-night,
+.badge-age {
+  color: var(--nv-danger) !important;
+}
+.badge-setup-hybrid,
+.badge-jobtype,
+.badge-benefits {
+  color: #7a3fa0 !important;
+}
+.badge-setup-onsite,
+.badge-degree,
+.badge-perks,
+.badge-gender,
+.badge-shift-day,
+.badge-shift-rotating,
+.badge-shift-swing {
+  color: var(--nv-accent) !important;
+}
+.nizviewer-tech-stack-row {
+  grid-column: 1/-1 !important;
+  padding-top: 6px !important;
+  border-top: 1px solid var(--nv-border) !important;
+}
 .nizviewer-tech-stack-pills {
   display: flex !important;
   flex-wrap: wrap !important;
   gap: 5px !important;
+  margin-top: 4px !important;
 }
-
 .nizviewer-tech-pill {
-  background: #f1f5f9 !important;
-  color: #0f172a !important;
-  border: 1px solid #cbd5e1 !important;
-  border-radius: 999px !important;
-  font-weight: 600 !important;
-  font-size: 11px !important;
-  line-height: 1.4 !important;
-  padding: 2px 8px !important;
-  white-space: nowrap !important;
-  cursor: default !important;
-}
-
-.nizviewer-tech-pill:hover {
-  background-color: #e2e8f0 !important;
-}
-
-/* Per-Card Action Buttons (Bottom-Right Anchor, Outline Style) */
-.nizviewer-card-actions {
-  position: absolute !important;
-  bottom: 12px !important;
-  right: 14px !important;
-  z-index: 10 !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 6px !important;
+  min-height: 22px !important;
+  padding: 1px 8px !important;
+  border: 1px solid var(--nv-border) !important;
+  border-radius: 999px !important;
+  background: var(--nv-surface) !important;
+  color: var(--nv-text) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
 }
-
-.nizviewer-card-action {
-  position: absolute !important;
-  bottom: 12px !important;
-  right: 14px !important;
-  z-index: 10 !important;
+.nizviewer-source-note {
+  margin: 8px 0 0 !important;
+  padding-top: 7px !important;
+  border-top: 1px solid var(--nv-border) !important;
+  color: var(--nv-muted) !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+.nizviewer-unavailable-note {
+  margin: 8px 0 0 !important;
+  color: var(--nv-muted) !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+.nizviewer-density-comfortable .nizviewer-tech-stack-card {
+  padding: 11px 12px !important;
+}
+.nizviewer-density-comfortable .nizviewer-info-row {
+  padding-top: 5px !important;
+  padding-bottom: 5px !important;
+}
+.nizviewer-density-detailed .nizviewer-tech-stack-rows {
+  grid-template-columns: 1fr !important;
+}
+.nizviewer-card-actions {
+  position: static !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-top: 6px !important;
+}
+.nizviewer-card-action,
+.nizviewer-text-action,
+.nizviewer-toolbar-actions button {
+  appearance: none !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 28px !important;
-  height: 28px !important;
-  padding: 6px !important;
-  border-radius: 50% !important;
+  min-height: 32px !important;
   box-sizing: border-box !important;
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  border: 1px solid #171717 !important;
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
-  cursor: pointer !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  line-height: 1 !important;
+  border: 1px solid var(--nv-border) !important;
+  border-radius: 6px !important;
+  background: var(--nv-bg) !important;
+  color: var(--nv-text) !important;
+  font:
+    600 12px/1.2 -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif !important;
 }
-
-.nizviewer-card-actions .nizviewer-card-action {
-  position: static !important;
-  bottom: auto !important;
-  right: auto !important;
+.badge-wrapper [hidden] {
+  display: none !important;
 }
-
-.nizviewer-card-action .nizviewer-btn-icon {
-  margin-right: 0 !important;
-  width: 13px !important;
-  height: 13px !important;
+.nizviewer-card-action {
+  width: 32px !important;
+  padding: 7px !important;
 }
-
+.nizviewer-text-action,
+.nizviewer-toolbar-actions button {
+  padding: 7px 10px !important;
+}
+.nizviewer-text-action.is-selected {
+  border-color: var(--nv-accent) !important;
+  color: var(--nv-accent) !important;
+}
+.nizviewer-card-action:hover,
+.nizviewer-text-action:hover,
+.nizviewer-toolbar-actions button:hover {
+  background: var(--nv-surface) !important;
+}
+.nizviewer-card-action:focus-visible,
+.nizviewer-text-action:focus-visible,
+.nizviewer-feed-toolbar :focus-visible {
+  outline: 3px solid var(--nv-focus) !important;
+  outline-offset: 2px !important;
+}
+.nizviewer-card-action:disabled {
+  opacity: 0.6 !important;
+}
 .nizviewer-card-action.nizviewer-copied,
 .nizviewer-card-action.badge-fetch-success {
-  border-color: #16a34a !important;
-  background-color: #f0fdf4 !important;
-  transform: scale(1.08) !important;
+  border-color: var(--nv-success) !important;
 }
-
 .nizviewer-card-action.badge-fetch-failed {
-  border-color: #dc2626 !important;
-  background-color: #fef2f2 !important;
+  border-color: var(--nv-danger) !important;
 }
-
-.nizviewer-card-action:hover {
-  background-color: #f1f5f9 !important;
-  transform: translateY(-1px) scale(1.06) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18) !important;
-}
-
-.nizviewer-card-action:disabled {
-  opacity: 0.75 !important;
-  cursor: wait !important;
-}
-
-/* Wrapper */
-.badge-wrapper {
+.nizviewer-btn-icon {
   display: block !important;
-  min-width: 100% !important;
-  max-width: 100% !important;
-  flex-basis: 100% !important;
-  flex-shrink: 0 !important;
-  pointer-events: auto !important;
-  margin-bottom: 4px !important;
-  animation: fadeInBadge 0.2s ease !important;
+  width: 14px !important;
+  height: 14px !important;
+  margin: 0 !important;
+  filter: none !important;
 }
-
-/* Hide Indeed UI chrome that conflicts with the extension */
-.dislike-tap-target,
-button[data-testid='dislikeicon'] {
+.nizviewer-card-fresh,
+.cardOutline.nizviewer-card-fresh,
+[class*='cardOutline'].nizviewer-card-fresh {
+  box-shadow: inset 4px 0 0 #2f9e5b !important;
+}
+.nizviewer-card-hidden-old,
+.nizviewer-filter-hidden {
   display: none !important;
+}
+.nizviewer-feed-toolbar {
+  box-sizing: border-box !important;
+  margin: 0 0 16px !important;
+  padding: 12px !important;
+  border: 1px solid var(--nv-border) !important;
+  border-radius: 10px !important;
+  background: var(--nv-bg) !important;
+  color: var(--nv-text) !important;
+}
+.nizviewer-toolbar-heading,
+.nizviewer-toolbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px 12px !important;
+}
+.nizviewer-toolbar-heading {
+  justify-content: space-between !important;
+  margin-bottom: 10px !important;
+}
+.nizviewer-toolbar-heading strong {
+  font-size: 15px !important;
+}
+.nizviewer-toolbar-heading span {
+  color: var(--nv-muted) !important;
+  font-size: 12px !important;
+}
+.nizviewer-toolbar-controls {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+  gap: 8px !important;
+  margin-bottom: 10px !important;
+}
+.nizviewer-toolbar-field {
+  display: grid !important;
+  gap: 4px !important;
+  color: var(--nv-muted) !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+}
+.nizviewer-toolbar-field input,
+.nizviewer-toolbar-field select {
+  width: 100% !important;
+  min-height: 34px !important;
+  box-sizing: border-box !important;
+  border: 1px solid var(--nv-border) !important;
+  border-radius: 6px !important;
+  background: var(--nv-bg) !important;
+  color: var(--nv-text) !important;
+  padding: 6px 8px !important;
+  font-size: 12px !important;
+}
+.nizviewer-toolbar-check {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  min-height: 44px !important;
+  color: var(--nv-text) !important;
+  font-size: 12px !important;
+}
+.nizviewer-toolbar-check input {
+  width: 18px !important;
+  height: 18px !important;
+}
+.nizviewer-sortable-list {
+  display: flex !important;
+  flex-direction: column !important;
+}
+#nizviewer-comparison {
+  margin-top: 12px !important;
+  padding-top: 12px !important;
+  border-top: 1px solid var(--nv-border) !important;
+}
+#nizviewer-comparison[hidden] {
+  display: none !important;
+}
+#nizviewer-comparison h3 {
+  margin: 0 0 8px !important;
+  font-size: 14px !important;
+}
+.nizviewer-comparison-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)) !important;
+  gap: 8px !important;
+}
+.nizviewer-comparison-grid article {
+  padding: 9px !important;
+  border: 1px solid var(--nv-border) !important;
+  border-radius: 7px !important;
+  background: var(--nv-surface) !important;
+}
+.nizviewer-comparison-grid h4 {
+  margin: 0 0 6px !important;
+  font-size: 13px !important;
+}
+.nizviewer-comparison-grid p {
+  margin: 3px 0 !important;
+  color: var(--nv-muted) !important;
+  font-size: 11px !important;
+}
+.nizviewer-comparison-grid a {
+  color: var(--nv-accent) !important;
+  font-size: 12px !important;
+}
+table.mainContentTable,
+table.jobCard_mainContent,
+td.resultContent {
+  width: 100% !important;
+  table-layout: fixed !important;
+  box-sizing: border-box !important;
+}
+@media (max-width: 560px) {
+  .nizviewer-tech-stack-rows {
+    grid-template-columns: 1fr !important;
+  }
+  .nizviewer-card-action,
+  .nizviewer-text-action,
+  .nizviewer-toolbar-actions button {
+    min-height: 44px !important;
+  }
+  .nizviewer-card-action {
+    width: 44px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .badge-wrapper *,
+  .nizviewer-feed-toolbar * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

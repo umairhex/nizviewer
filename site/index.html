@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Indeed Job Date & Tech Stack Viewer | NizViewer</title>
+    <meta
+      name="description"
+      content="NizViewer is a free Chrome and Firefox extension that reveals Indeed job posting dates, salary, work setup, experience, and tech stack in search results."
+    />
+    <meta name="author" content="Umair" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="theme-color" content="#171717" />
+    <link rel="canonical" href="https://umairhex.github.io/nizviewer/" />
+    <link rel="icon" href="logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="sitemap"
+      type="application/xml"
+      href="https://umairhex.github.io/nizviewer/sitemap.xml"
+    />
+    <link rel="alternate" type="text/plain" href="llms.txt" title="NizViewer for AI systems" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="NizViewer" />
+    <meta property="og:title" content="NizViewer: Indeed Job Date and Tech Stack Viewer" />
+    <meta
+      property="og:description"
+      content="See the real posting date, salary, work setup, experience, and technologies on Indeed job cards. Free with public source code."
+    />
+    <meta property="og:url" content="https://umairhex.github.io/nizviewer/" />
+    <meta property="og:image" content="https://umairhex.github.io/nizviewer/social-card.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="NizViewer shows useful job details directly on Indeed cards"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="NizViewer: Indeed Job Date Viewer" />
+    <meta
+      name="twitter:description"
+      content="Reveal posting dates and job details directly in Indeed search results."
+    />
+    <meta name="twitter:image" content="https://umairhex.github.io/nizviewer/social-card.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://umairhex.github.io/nizviewer/#website",
+            "url": "https://umairhex.github.io/nizviewer/",
+            "name": "NizViewer",
+            "description": "Official website for the NizViewer browser extension.",
+            "inLanguage": "en"
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://umairhex.github.io/nizviewer/#software",
+            "name": "NizViewer",
+            "alternateName": "Indeed Job Date Viewer",
+            "url": "https://umairhex.github.io/nizviewer/",
+            "image": "https://umairhex.github.io/nizviewer/social-card.png",
+            "description": "A free browser extension that reveals the posting date, salary, work setup, shift, experience requirement, and technology stack for Indeed job listings.",
+            "applicationCategory": "BrowserApplication",
+            "applicationSubCategory": "Job search utility",
+            "operatingSystem": "Google Chrome, Mozilla Firefox, Microsoft Edge, Brave",
+            "softwareVersion": "1.4.0",
+            "isAccessibleForFree": true,
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "downloadUrl": "https://addons.mozilla.org/en-US/firefox/addon/nizviewer-indeed-job-dates/",
+            "codeRepository": "https://github.com/umairhex/nizviewer",
+            "featureList": [
+              "Indeed job posting date detection",
+              "Salary and compensation extraction",
+              "Remote, hybrid, and onsite work setup detection",
+              "Experience and shift extraction",
+              "Technology stack detection",
+              "Job filtering, comparison, copying, and CSV export"
+            ],
+            "author": {
+              "@type": "Person",
+              "name": "Umair",
+              "url": "https://umairrx.dev/",
+              "sameAs": ["https://github.com/umairhex", "https://www.linkedin.com/in/umairhex"]
+            },
+            "sameAs": [
+              "https://github.com/umairhex/nizviewer",
+              "https://addons.mozilla.org/en-US/firefox/addon/nizviewer-indeed-job-dates/"
+            ],
+            "isPartOf": { "@id": "https://umairhex.github.io/nizviewer/#website" }
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="NizViewer home">
+        <img src="logo.svg" width="34" height="34" alt="" />
+        <span>NizViewer</span>
+      </a>
+      <nav aria-label="Main navigation">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://github.com/umairhex/nizviewer">Source code</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <p class="eyebrow">Free Chrome and Firefox extension</p>
+        <h1 id="hero-title">See the real date and useful details on Indeed job listings</h1>
+        <p class="hero-copy">
+          NizViewer adds the posting date, salary, work setup, experience requirement, shift, and
+          technology stack to Indeed job cards. It works on the landing page, search results, and
+          individual job pages.
+        </p>
+        <div class="hero-actions">
+          <a
+            class="button primary"
+            href="https://addons.mozilla.org/en-US/firefox/addon/nizviewer-indeed-job-dates/"
+            >Install for Firefox</a
+          >
+          <a
+            class="button secondary"
+            href="https://github.com/umairhex/nizviewer#load-in-browser-unpacked"
+            >Install for Chrome</a
+          >
+        </div>
+        <ul class="proof-list" aria-label="Product facts">
+          <li>Public source code</li>
+          <li>Local browser storage</li>
+          <li>No account required</li>
+          <li>Version 1.4.0</li>
+        </ul>
+      </section>
+
+      <section class="demo" aria-labelledby="demo-title">
+        <div>
+          <p class="eyebrow">A clearer search feed</p>
+          <h2 id="demo-title">Important facts stay attached to each job</h2>
+          <p>
+            Indeed often shows relative labels such as "30+ days ago" and hides detailed
+            requirements inside the full description. NizViewer places a compact summary below the
+            job title, then lets you expand it when you need the secondary fields.
+          </p>
+        </div>
+        <article class="job-card" aria-label="Example enriched job card">
+          <div class="job-heading">
+            <div>
+              <p class="job-title">Full Stack Engineer</p>
+              <p class="company">Example company · Rawalpindi</p>
+            </div>
+            <span class="status"><span aria-hidden="true"></span>Full details</span>
+          </div>
+          <dl class="details">
+            <div>
+              <dt>Posted</dt>
+              <dd>Aug 27 (2d ago)</dd>
+            </div>
+            <div>
+              <dt>Work setup</dt>
+              <dd>Remote</dd>
+            </div>
+            <div>
+              <dt>Experience</dt>
+              <dd>3+ years</dd>
+            </div>
+            <div>
+              <dt>Job type</dt>
+              <dd>Full-time</dd>
+            </div>
+          </dl>
+          <div class="tech" aria-label="Technologies mentioned">
+            <span>Next.js</span><span>TypeScript</span><span>Node.js</span><span>PostgreSQL</span>
+          </div>
+        </article>
+      </section>
+
+      <section id="features" class="section" aria-labelledby="features-title">
+        <p class="eyebrow">What NizViewer reveals</p>
+        <h2 id="features-title">Job details that are easier to scan and compare</h2>
+        <div class="feature-grid">
+          <article>
+            <h3>Actual posting date</h3>
+            <p>Shows a calendar date and age instead of relying only on a broad relative label.</p>
+          </article>
+          <article>
+            <h3>Salary and compensation</h3>
+            <p>
+              Surfaces salary text found in the listing or full job description when it is
+              available.
+            </p>
+          </article>
+          <article>
+            <h3>Remote, hybrid, or onsite</h3>
+            <p>
+              Classifies the stated work setup and leaves it unknown when the description does not
+              say.
+            </p>
+          </article>
+          <article>
+            <h3>Experience and shift</h3>
+            <p>Finds years of experience and day, night, mid, rotating, or swing shift language.</p>
+          </article>
+          <article>
+            <h3>Technology stack</h3>
+            <p>
+              Groups mentioned languages, frameworks, databases, cloud services, and tools by
+              category.
+            </p>
+          </article>
+          <article>
+            <h3>Filters and comparison</h3>
+            <p>
+              Filters extracted jobs, compares up to four roles, copies visible rows, and exports
+              CSV.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="how-it-works" class="section split" aria-labelledby="how-title">
+        <div>
+          <p class="eyebrow">How it works</p>
+          <h2 id="how-title">Where the Indeed posting date comes from</h2>
+        </div>
+        <div class="prose">
+          <p>
+            NizViewer reads job data that Indeed sends to your browser. It checks structured page
+            data and network responses for the listing identifier and publication timestamp. When a
+            search card contains only a short snippet, the extension requests that job's public
+            <code>/viewjob?jk=...</code> page and parses the complete description.
+          </p>
+          <p>
+            The extension does not invent missing values. A card reports whether its data is full,
+            partial, pending, or failed. Expanded cards also identify fields that were not detected,
+            because an omitted requirement is different from a confirmed requirement.
+          </p>
+        </div>
+      </section>
+
+      <section class="section" aria-labelledby="workflow-title">
+        <p class="eyebrow">Supported workflows</p>
+        <h2 id="workflow-title">Landing page, search results, and individual jobs</h2>
+        <div class="workflow-grid">
+          <article>
+            <span>01</span>
+            <h3>Open Indeed</h3>
+            <p>
+              NizViewer detects job cards on regional Indeed domains, including Pakistan, the UK,
+              Canada, India, Australia, and the UAE.
+            </p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Wait for enrichment</h3>
+            <p>
+              Visible jobs load with bounded concurrency. Each card shows its current status and
+              offers a retry after failure.
+            </p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Review or export</h3>
+            <p>
+              Filter by detected fields, compare jobs, copy selected columns, or export the visible
+              result set as CSV.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="privacy" class="section trust" aria-labelledby="privacy-title">
+        <div>
+          <p class="eyebrow">Privacy and trust</p>
+          <h2 id="privacy-title">Your extracted job data stays in browser storage</h2>
+        </div>
+        <div class="prose">
+          <p>
+            NizViewer does not require an account and does not send extracted job details to a
+            NizViewer server. It stores a temporary cache through the browser's local extension
+            storage so repeated visits do not need to parse the same listing again.
+          </p>
+          <p>
+            The source code is public. NizViewer is an independent project and is not affiliated
+            with or endorsed by Indeed. Always confirm salary, eligibility, and application
+            requirements in the original job posting.
+          </p>
+          <a href="https://github.com/umairhex/nizviewer/blob/main/PRIVACY.md"
+            >Read the privacy policy</a
+          >
+        </div>
+      </section>
+
+      <section id="faq" class="section" aria-labelledby="faq-title">
+        <p class="eyebrow">Frequently asked questions</p>
+        <h2 id="faq-title">Questions about Indeed job dates and NizViewer</h2>
+        <div class="faq-list">
+          <details>
+            <summary>How can I see the real posting date on Indeed?</summary>
+            <p>
+              Install NizViewer and open an Indeed landing page, search page, or individual job.
+              When Indeed provides a publication timestamp, NizViewer shows the calendar date and
+              the number of days since posting on the job card.
+            </p>
+          </details>
+          <details>
+            <summary>Does NizViewer require me to click every job card?</summary>
+            <p>
+              No. Search and landing-page cards can fetch their public job detail pages
+              automatically, with limited concurrent requests and retry handling.
+            </p>
+          </details>
+          <details>
+            <summary>Can it show the technology stack for an Indeed job?</summary>
+            <p>
+              Yes. NizViewer scans the complete description for mentioned technologies and groups
+              recognized terms into categories such as frontend, backend, cloud, DevOps, data, AI,
+              security, mobile, and testing.
+            </p>
+          </details>
+          <details>
+            <summary>Why is a field marked "not detected"?</summary>
+            <p>
+              The job description may not state that information, or it may use language the current
+              parser does not recognize. NizViewer reports missing data instead of treating it as a
+              confirmed value.
+            </p>
+          </details>
+          <details>
+            <summary>Is NizViewer free?</summary>
+            <p>
+              Yes. NizViewer is free to install and its source code is publicly available on GitHub.
+            </p>
+          </details>
+          <details>
+            <summary>Does NizViewer work on Indeed Pakistan?</summary>
+            <p>
+              Yes. The extension supports <code>pk.indeed.com</code> through its Indeed domain
+              permissions. It also supports several other regional Indeed domains.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <section class="cta" aria-labelledby="cta-title">
+        <h2 id="cta-title">Spend less time opening incomplete job cards</h2>
+        <p>
+          Install NizViewer, refresh Indeed, and review the details directly in your search feed.
+        </p>
+        <div class="hero-actions">
+          <a
+            class="button primary"
+            href="https://addons.mozilla.org/en-US/firefox/addon/nizviewer-indeed-job-dates/"
+            >Get the Firefox add-on</a
+          >
+          <a class="button secondary" href="https://github.com/umairhex/nizviewer"
+            >View the source on GitHub</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p><strong>NizViewer</strong> · Free Indeed job date and metadata viewer</p>
+      <p>
+        Built by <a href="https://umairrx.dev/">Umair</a> ·
+        <a href="https://github.com/umairhex/nizviewer">GitHub</a> ·
+        <a href="https://www.linkedin.com/in/umairhex">LinkedIn</a>
+      </p>
+      <p>Last updated August 29, 2026.</p>
+    </footer>
+  </body>
+</html>

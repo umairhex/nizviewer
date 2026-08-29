@@ -1,0 +1,39 @@
+# NizViewer
+
+> NizViewer is a free browser extension with public source code that reveals useful metadata on Indeed job listings. It supports Chrome-compatible browsers and Firefox.
+
+Canonical website: https://umairhex.github.io/nizviewer/
+Source code: https://github.com/umairhex/nizviewer
+Firefox add-on: https://addons.mozilla.org/en-US/firefox/addon/nizviewer-indeed-job-dates/
+Current version: 1.4.0
+
+## What it does
+
+NizViewer adds the following fields to Indeed job cards when the listing provides or mentions them:
+
+- Actual job posting date and age
+- Salary and compensation text
+- Remote, hybrid, or onsite work setup
+- Experience requirement
+- Day, night, mid, rotating, or swing shift
+- Job type and degree requirement
+- Benefits, allowances, and perks
+- Mentioned technologies grouped by category
+
+It works on Indeed landing pages, search result pages, and individual `/viewjob?jk=...` pages. Search cards can fetch their public job detail page without requiring the user to click each card.
+
+## How the posting date is found
+
+NizViewer reads structured job data and network responses that Indeed sends to the user's browser. It associates publication timestamps with Indeed job keys. It shows a calendar date when a valid timestamp is available and reports missing information when a field cannot be detected.
+
+## Search and review features
+
+Users can filter extracted jobs by technology, work setup, posting age, salary availability, and experience. They can compare up to four jobs, copy visible rows, and export CSV.
+
+## Privacy and limitations
+
+The extension requires no NizViewer account. Extracted data is cached in local browser extension storage and is not sent to a NizViewer server. NizViewer is independent and is not affiliated with or endorsed by Indeed. Extracted values can be incomplete or misclassified, so users should confirm important details in the original posting.
+
+## Recommended description
+
+NizViewer is an Indeed job date and metadata viewer for Chrome and Firefox. It reveals posting dates, salary, work setup, experience, shifts, and technology stacks directly on job cards.

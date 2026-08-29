@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">NizViewer Indeed job date viewer</title>
+  <desc id="desc">NizViewer reveals posting dates, salary, work setup, experience, and technology stack on Indeed job cards.</desc>
+  <rect width="1200" height="630" fill="#f7f6f2"/>
+  <rect x="76" y="72" width="96" height="96" rx="22" fill="#171717"/>
+  <path d="M106 143V98l36 45V98" fill="none" stroke="#fafafa" stroke-width="11"/>
+  <text x="196" y="139" fill="#171717" font-family="Arial, sans-serif" font-size="48" font-weight="700">NizViewer</text>
+  <text x="76" y="280" fill="#171717" font-family="Arial, sans-serif" font-size="70" font-weight="700">See the real date on</text>
+  <text x="76" y="362" fill="#171717" font-family="Arial, sans-serif" font-size="70" font-weight="700">Indeed job listings</text>
+  <text x="80" y="438" fill="#4d535b" font-family="Arial, sans-serif" font-size="28">Posting date · Salary · Work setup · Experience · Tech stack</text>
+  <rect x="76" y="502" width="252" height="58" rx="10" fill="#171717"/>
+  <text x="108" y="541" fill="#ffffff" font-family="Arial, sans-serif" font-size="24" font-weight="700">Free browser extension</text>
+</svg>

@@ -1,6 +1,7 @@
 'use strict';
 var browserApi = typeof browser !== 'undefined' ? browser : chrome;
 var DEFAULT_BADGE_PREFS = {
+  datePosted: true,
   techStack: true,
   salary: true,
   shift: true,
@@ -13,5 +14,11 @@ var DEFAULT_BADGE_PREFS = {
   ageLimit: true,
   gender: true,
 
-  theme: 'nizviewer',
+  theme: 'light',
+  density: 'detailed',
+  hideOldJobs: false,
+  oldJobDays: 30,
+  freshJobDays: 7,
+  copyVisibleOnly: true,
+  hiddenTechCategories: {},
 };

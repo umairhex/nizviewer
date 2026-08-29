@@ -1,6 +1,8 @@
-# NizViewer
+# NizViewer: Indeed job date and metadata viewer
 
-A browser extension for Chrome and Firefox that enriches Indeed job listings with extracted metadata — posting date, salary, shift schedule, work setup, experience requirements, tech stack, benefits, and more — displayed as compact badges directly on the search feed.
+NizViewer is a free browser extension for Chrome and Firefox that shows the real Indeed job posting date and extracts salary, shift schedule, work setup, experience requirements, technology stack, benefits, and other useful details. It displays a compact summary directly on landing-page cards, search results, and individual job pages.
+
+[Official website](https://umairhex.github.io/nizviewer/) · [Firefox add-on](https://addons.mozilla.org/en-US/firefox/addon/nizviewer-indeed-job-dates/) · [Privacy policy](./PRIVACY.md)
 
 ---
 
@@ -13,8 +15,13 @@ A browser extension for Chrome and Firefox that enriches Indeed job listings wit
 - **Experience** — Years required, parsed from job descriptions
 - **Tech Stack** — Key technologies mentioned in the listing
 - **Benefits & Perks** — Retirement, insurance, and allowance signals
-
-- **Contextual Popup** — Settings only shown when on an Indeed feed; empty state on all other pages
+- **Reliable Full Details** — Landing, search, and standalone job pages load full descriptions without requiring a card click
+- **Compact, Expandable Cards** — Primary details stay scannable while secondary fields and source notes remain available on demand
+- **Search Tools** — Filter by technology, work setup, posting age, salary availability, and experience; sort extracted results
+- **Bulk Workflows** — Copy visible rows, export CSV, and compare up to four jobs
+- **Accessible Feedback** — Full, partial, pending, and failed states with visible retry controls and screen-reader announcements
+- **Personalisation** — Field selection, density, theme, age thresholds, and technology-category visibility
+- **Contextual Popup** — Settings are available on Indeed landing, search, and job-detail pages
 
 ---
 
@@ -82,7 +89,7 @@ pnpm run build
 pnpm run build:chrome
 ```
 
-Output: `web-ext-artifacts/nizviewer-1.0.0.zip`
+Output: `web-ext-artifacts/nizviewer-1.4.0.zip`
 
 > **Chrome Store note:** The `browser_specific_settings` key in `manifest.json` is Firefox-only. Chrome does not recognise it and will show a dashboard **warning** (informational only — it does **not** block publication). You can safely ignore it or use `pnpm run build:chrome` to strip it at build time.
 
@@ -124,8 +131,22 @@ nizviewer/
 
 1. `pageHook.js` is injected into the page context and intercepts `window.fetch` to capture raw Indeed API responses
 2. Extracted job metadata is `postMessage`-d back to `content.js`
-3. `content.js` caches results in `chrome.storage.local` and renders badge wrappers on each job card
-4. The popup pushes preference changes live to all open Indeed tabs via `chrome.tabs.sendMessage` — no page reload required
+3. Landing and search-result cards whose initial payload only contains a snippet are enriched from their full job-detail pages with bounded concurrency and retries
+4. Standalone `/viewjob?jk=...` pages are parsed from their loaded job description and receive the same metadata panel
+5. `content.js` caches results in `chrome.storage.local` and renders badge wrappers on each job card
+6. The popup pushes preference changes live to all open Indeed tabs via `chrome.tabs.sendMessage` — no page reload required
+
+## How NizViewer finds the Indeed posting date
+
+NizViewer reads structured job data and network responses that Indeed already sends to the browser. It associates the publication timestamp with the listing's job key and shows the calendar date on the matching card. When a card contains only a short snippet, NizViewer requests the public `/viewjob?jk=...` page on the same Indeed domain and parses the complete description.
+
+The extension reports full, partial, pending, and failed states. It does not replace a missing value with a guess. Always confirm important details in the original posting.
+
+## Public website and search discovery
+
+The static product site in [`site/`](./site/) contains the canonical product description, software structured data, crawler rules, sitemap, and a concise machine-readable summary. The GitHub Pages workflow publishes that directory after changes reach `main`.
+
+To activate the first deployment, select **GitHub Actions** under **Repository Settings → Pages → Build and deployment**. Then submit `https://umairhex.github.io/nizviewer/sitemap.xml` to Google Search Console and Bing Webmaster Tools.
 
 ---
 
@@ -143,4 +164,4 @@ See [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
 ## License
 
-MIT
+The repository does not currently contain a license file. The project owner must reconcile the MIT reference previously shown here with the Mozilla Public License 2.0 selected on the Firefox listing before publishing definitive license metadata.

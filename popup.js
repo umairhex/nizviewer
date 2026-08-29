@@ -1,171 +1,216 @@
 'use strict';
 (() => {
-  var storage = browserApi.storage;
+  const storage = browserApi.storage;
+  const FIELD_LABELS = {
+    datePosted: 'Posting date',
+    salary: 'Salary and compensation',
+    shift: 'Shift schedule',
+    workSetup: 'Work setup',
+    experience: 'Experience requirement',
+    jobType: 'Job type',
+    degree: 'Education and degree',
+    techStack: 'Technology stack',
+    benefits: 'Benefits',
+    perks: 'Allowances and perks',
+    ageLimit: 'Age limits',
+    gender: 'Gender specifics',
+  };
+
   document.addEventListener('DOMContentLoaded', () => {
-    const toggle = document.getElementById('toggleEnabled');
-    const reloadNote = document.getElementById('reloadNote');
+    const byId = (id) => document.getElementById(id);
+    const toggle = byId('toggleEnabled');
+    const note = byId('reloadNote');
+    const main = byId('mainContent');
+    const empty = byId('emptyState');
+    const fieldControls = byId('fieldControls');
+    const categoryControls = byId('categoryControls');
+    let prefs = { ...DEFAULT_BADGE_PREFS, hiddenTechCategories: {} };
 
-    const mainContent = document.getElementById('mainContent');
-    const emptyState = document.getElementById('emptyState');
-    const cacheCountLabel = document.getElementById('cacheCountLabel');
-    const btnClearCache = document.getElementById('btnClearCache');
-    const btnSelectAll = document.getElementById('btnSelectAll');
-    const btnSelectNone = document.getElementById('btnSelectNone');
-
-    function flashCheckIcon(btn) {
-      const orig = btn.textContent;
-      btn.textContent = '';
-      if (typeof ICONS !== 'undefined' && ICONS.check) {
-        const img = document.createElement('img');
-        img.src = ICONS.check;
-        img.alt = '';
-        img.className = 'popup-btn-icon';
-        btn.appendChild(img);
-      }
-      setTimeout(() => {
-        btn.textContent = orig;
-      }, 800);
+    function showNote(message, error = false) {
+      note.textContent = message;
+      note.style.display = 'block';
+      note.style.color = error ? 'var(--danger)' : 'var(--muted)';
+      window.clearTimeout(showNote.timer);
+      showNote.timer = window.setTimeout(() => {
+        note.style.display = 'none';
+      }, 2200);
     }
 
-    let prefs = { ...DEFAULT_BADGE_PREFS };
+    function createSwitch(id, label, prefKey) {
+      const row = document.createElement('div');
+      row.className = 'row';
+      const text = document.createElement('label');
+      text.htmlFor = id;
+      text.textContent = label;
+      row.appendChild(text);
+      const switchLabel = document.createElement('label');
+      switchLabel.className = 'switch';
+      const input = document.createElement('input');
+      input.id = id;
+      input.type = 'checkbox';
+      input.className = 'pref-toggle';
+      input.dataset.pref = prefKey;
+      const track = document.createElement('span');
+      track.className = 'track';
+      switchLabel.append(input, track);
+      row.appendChild(switchLabel);
+      return row;
+    }
 
-    async function loadSettings() {
-      if (browserApi.tabs) {
-        browserApi.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-          const url = tabs[0]?.url || '';
-          if (url.includes('indeed.com') || url.includes('indeed.')) {
-            mainContent.style.display = 'block';
-            emptyState.style.display = 'none';
-          } else {
-            mainContent.style.display = 'none';
-            emptyState.style.display = 'block';
-          }
-        });
-      }
+    for (const [key, label] of Object.entries(FIELD_LABELS)) {
+      fieldControls.appendChild(createSwitch(`pref-${key}`, label, key));
+    }
 
+    const categories =
+      typeof TECH_CATEGORIES === 'undefined'
+        ? []
+        : [...new Set(TECH_CATEGORIES.map((category) => category.label))];
+    for (const category of categories) {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'checkbox';
+      input.dataset.category = category;
+      label.append(input, document.createTextNode(category));
+      categoryControls.appendChild(label);
+    }
+
+    async function broadcast(message) {
+      if (!browserApi.tabs) return;
       try {
-        const res = await storage.local.get(['extensionEnabled', 'badgePrefs', 'nizViewerCache']);
-        toggle.checked = res.extensionEnabled !== false;
-
-        if (res.badgePrefs) prefs = { ...DEFAULT_BADGE_PREFS, ...res.badgePrefs };
-
-        document.querySelectorAll('.pref-toggle').forEach((t) => {
-          const prefKey = t.getAttribute('data-pref');
-          t.checked = prefs[prefKey] !== false;
-        });
-
-
-
-        if (cacheCountLabel) {
-          const count = res.nizViewerCache ? Object.keys(res.nizViewerCache).length : 0;
-          cacheCountLabel.textContent = `${count} job${count === 1 ? '' : 's'} cached`;
+        const tabs = await browserApi.tabs.query({});
+        for (const tab of tabs || []) {
+          if (!/^https?:\/\/[^/]*indeed\./i.test(tab.url || '')) continue;
+          browserApi.tabs.sendMessage(tab.id, message)?.catch?.(() => {});
         }
-      } catch (e) {
-        console.error('Failed to load settings', e);
-        if (reloadNote) {
-          reloadNote.textContent = 'Error loading settings.';
-          reloadNote.style.color = 'red';
-          reloadNote.style.display = 'block';
-        }
-      }
+      } catch {}
     }
 
-    async function saveAndBroadcast() {
+    async function savePrefs(message = 'Preferences updated.') {
       try {
         await storage.local.set({ badgePrefs: prefs });
-        if (browserApi.tabs) {
-          browserApi.tabs.query({ url: ['*://*.indeed.com/*', '*://*.indeed.*/*'] }, (tabs) => {
-            if (tabs)
-              tabs.forEach((t) => {
-                try {
-                  browserApi.tabs.sendMessage(t.id, { type: 'PREFS_CHANGED', prefs });
-                } catch (e) {}
-              });
-          });
-        }
-      } catch (e) {
-        if (reloadNote) {
-          reloadNote.textContent = 'Failed to save preference.';
-          reloadNote.style.display = 'block';
-        }
+        await broadcast({ type: 'PREFS_CHANGED', prefs });
+        showNote(message);
+      } catch {
+        showNote('Could not save preferences.', true);
       }
     }
 
-    async function updatePref(key, value) {
-      prefs[key] = value;
-      await saveAndBroadcast();
-    }
-
-    document.querySelectorAll('.pref-toggle').forEach((t) => {
-      t.addEventListener('change', () => updatePref(t.getAttribute('data-pref'), t.checked));
-    });
-
-    async function setAllPrefs(value, btn) {
-      document.querySelectorAll('.pref-toggle').forEach((t) => {
-        t.checked = value;
-        prefs[t.getAttribute('data-pref')] = value;
+    function syncControls() {
+      document.querySelectorAll('.pref-toggle').forEach((input) => {
+        input.checked = prefs[input.dataset.pref] !== false;
       });
-      await saveAndBroadcast();
-      if (btn) flashCheckIcon(btn);
-    }
-
-    if (btnSelectAll) {
-      btnSelectAll.addEventListener('click', () => setAllPrefs(true, btnSelectAll));
-    }
-
-    if (btnSelectNone) {
-      btnSelectNone.addEventListener('click', () => setAllPrefs(false, btnSelectNone));
-    }
-
-    if (btnClearCache) {
-      btnClearCache.addEventListener('click', async () => {
-        if (!confirm('Are you sure you want to clear all extracted job data?')) return;
-        try {
-          await storage.local.remove('nizViewerCache');
-          cacheCountLabel.textContent = '0 jobs cached';
-          if (browserApi.tabs) {
-            browserApi.tabs.query({ url: ['*://*.indeed.com/*', '*://*.indeed.*/*'] }, (tabs) => {
-              if (tabs)
-                tabs.forEach((t) => {
-                  try {
-                    browserApi.tabs.sendMessage(t.id, { type: 'CACHE_CLEARED' });
-                  } catch (e) {}
-                });
-            });
-          }
-        } catch (e) {
-          console.error(e);
-        }
+      for (const id of ['density', 'theme', 'freshJobDays', 'oldJobDays']) {
+        byId(id).value = prefs[id];
+      }
+      byId('hideOldJobs').checked = prefs.hideOldJobs === true;
+      document.querySelectorAll('[data-category]').forEach((input) => {
+        input.checked = prefs.hiddenTechCategories?.[input.dataset.category] !== true;
       });
+      byId('oldJobDays').disabled = !prefs.hideOldJobs;
     }
 
-
-    toggle.addEventListener('change', async () => {
-      const isEnabled = toggle.checked;
+    async function load() {
       try {
-        await storage.local.set({ extensionEnabled: isEnabled });
         if (browserApi.tabs) {
-          browserApi.tabs.query({ url: ['*://*.indeed.com/*', '*://*.indeed.*/*'] }, (tabs) => {
-            if (tabs)
-              tabs.forEach((t) => {
-                try {
-                  browserApi.tabs.sendMessage(t.id, {
-                    type: 'EXTENSION_STATE_CHANGED',
-                    enabled: isEnabled,
-                  });
-                } catch (e) {}
-              });
-          });
+          const tabs = await browserApi.tabs.query({ active: true, currentWindow: true });
+          const supported = /^https?:\/\/[^/]*indeed\./i.test(tabs?.[0]?.url || '');
+          main.style.display = supported ? 'block' : 'none';
+          empty.style.display = supported ? 'none' : 'block';
         }
-      } catch (e) {
-        if (reloadNote) {
-          reloadNote.textContent = 'Failed to toggle extension.';
-          reloadNote.style.color = 'red';
-          reloadNote.style.display = 'block';
-        }
+        const result = await storage.local.get([
+          'extensionEnabled',
+          'badgePrefs',
+          'nizViewerCache',
+        ]);
+        toggle.checked = result.extensionEnabled !== false;
+        prefs = {
+          ...DEFAULT_BADGE_PREFS,
+          ...(result.badgePrefs || {}),
+          hiddenTechCategories: { ...(result.badgePrefs?.hiddenTechCategories || {}) },
+        };
+        syncControls();
+        const count = Object.keys(result.nizViewerCache || {}).length;
+        byId('cacheCountLabel').textContent = `${count} cached job${count === 1 ? '' : 's'}`;
+      } catch {
+        showNote('Could not load NizViewer settings.', true);
+      }
+    }
+
+    fieldControls.addEventListener('change', (event) => {
+      const key = event.target?.dataset?.pref;
+      if (!key) return;
+      prefs[key] = event.target.checked;
+      savePrefs();
+    });
+    categoryControls.addEventListener('change', (event) => {
+      const category = event.target?.dataset?.category;
+      if (!category) return;
+      prefs.hiddenTechCategories[category] = !event.target.checked;
+      savePrefs();
+    });
+    document
+      .querySelectorAll('select[data-pref], input[type=number][data-pref]')
+      .forEach((control) => {
+        control.addEventListener('change', () => {
+          const key = control.dataset.pref;
+          const value = control.type === 'number' ? Number(control.value) : control.value;
+          if (key === 'oldJobDays') prefs[key] = Math.min(365, Math.max(1, value || 30));
+          else if (key === 'freshJobDays') prefs[key] = Math.min(90, Math.max(0, value || 0));
+          else prefs[key] = value;
+          if (key === 'freshJobDays' && prefs.oldJobDays <= prefs.freshJobDays) {
+            prefs.oldJobDays = Math.min(365, prefs.freshJobDays + 1);
+          }
+          if (key === 'oldJobDays' && prefs.freshJobDays >= prefs.oldJobDays) {
+            prefs.freshJobDays = Math.max(0, prefs.oldJobDays - 1);
+          }
+          syncControls();
+          savePrefs();
+        });
+      });
+    byId('hideOldJobs').addEventListener('change', (event) => {
+      prefs.hideOldJobs = event.target.checked;
+      syncControls();
+      savePrefs(
+        event.target.checked
+          ? 'Older jobs will be hidden with a recovery control.'
+          : 'Older jobs remain visible.',
+      );
+    });
+    byId('btnSelectAll').addEventListener('click', () => {
+      for (const key of Object.keys(FIELD_LABELS)) prefs[key] = true;
+      syncControls();
+      savePrefs('All fields enabled.');
+    });
+    byId('btnSelectNone').addEventListener('click', () => {
+      for (const key of Object.keys(FIELD_LABELS)) prefs[key] = false;
+      syncControls();
+      savePrefs('Optional fields hidden.');
+    });
+    byId('btnReset').addEventListener('click', () => {
+      prefs = { ...DEFAULT_BADGE_PREFS, hiddenTechCategories: {} };
+      syncControls();
+      savePrefs('Default preferences restored.');
+    });
+    byId('btnClearCache').addEventListener('click', async () => {
+      if (!window.confirm('Clear all cached extracted job details?')) return;
+      try {
+        await storage.local.remove('nizViewerCache');
+        byId('cacheCountLabel').textContent = '0 cached jobs';
+        await broadcast({ type: 'CACHE_CLEARED' });
+        showNote('Cached job details cleared.');
+      } catch {
+        showNote('Could not clear cached data.', true);
       }
     });
-
-    loadSettings();
+    toggle.addEventListener('change', async () => {
+      try {
+        await storage.local.set({ extensionEnabled: toggle.checked });
+        await broadcast({ type: 'EXTENSION_STATE_CHANGED', enabled: toggle.checked });
+        showNote(toggle.checked ? 'NizViewer enabled.' : 'NizViewer disabled.');
+      } catch {
+        showNote('Could not change extension state.', true);
+      }
+    });
+    load();
   });
 })();

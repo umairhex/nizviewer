@@ -2,416 +2,311 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NizViewer</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>NizViewer settings</title>
     <style>
       :root {
-        --canvas: #fafafa;
-        --elevated: #ffffff;
-        --ink: #171717;
-        --body: #4d4d4d;
-        --mute: #8f8f8f;
-        --hairline: #ebebeb;
-        --link: #0070f3;
-        --error: #e53e3e;
-        --rounded-sm: 6px;
+        color-scheme: light dark;
+        --bg: #f6f7f9;
+        --card: #fff;
+        --text: #182230;
+        --muted: #5c6878;
+        --border: #dce2e9;
+        --accent: #2557a7;
+        --danger: #b42318;
       }
-
-      body {
-        width: 360px;
-        margin: 0;
-        padding: 16px;
-        font-family:
-          'Geist Sans',
-          'Inter',
-          -apple-system,
-          sans-serif;
-        background-color: var(--canvas);
-        color: var(--ink);
+      * {
         box-sizing: border-box;
       }
-
+      body {
+        width: 380px;
+        max-height: 600px;
+        overflow-y: auto;
+        margin: 0;
+        padding: 16px;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          13px/1.45 -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+      }
       .header {
         display: flex;
         align-items: center;
-        gap: 12px;
-        margin-bottom: 24px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid var(--hairline);
+        gap: 10px;
+        margin-bottom: 14px;
       }
-
       .header img {
-        width: 24px;
-        height: 24px;
-        border-radius: 4px;
+        width: 28px;
+        height: 28px;
       }
-
       .header h1 {
-        font-size: 16px;
-        font-weight: 600;
         margin: 0;
-        letter-spacing: -0.4px;
+        font-size: 17px;
       }
-
-      .section-eyebrow {
-        font-family: 'Geist Mono', 'JetBrains Mono', monospace;
+      .version {
+        color: var(--muted);
         font-size: 11px;
-        font-weight: 500;
-        text-transform: uppercase;
-        color: var(--mute);
-        margin: 0 0 8px 4px;
-        letter-spacing: 0.5px;
+        font-weight: 400;
       }
-
-      .card {
-        background-color: var(--elevated);
-        border: 1px solid var(--hairline);
-        border-radius: var(--rounded-sm);
-        padding: 12px;
-        margin-bottom: 16px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+      .enabled {
+        margin-left: auto;
       }
-
-      .control-row {
+      .section-head {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        padding: 8px 0;
+        justify-content: space-between;
+        gap: 8px;
+        margin: 16px 0 6px;
       }
-
-      .control-row:not(:last-child) {
-        border-bottom: 1px solid var(--hairline);
+      .section-head h2 {
+        margin: 0;
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
       }
-
-      .label {
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--ink);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        max-width: 55%;
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        background: var(--card);
+        padding: 5px 11px;
       }
-
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        min-height: 42px;
+        border-bottom: 1px solid var(--border);
+      }
+      .row:last-child {
+        border: 0;
+      }
+      .row label:first-child,
+      .row > span:first-child {
+        font-weight: 600;
+      }
       .switch {
         position: relative;
-        display: inline-block;
-        width: 32px;
-        height: 18px;
+        display: inline-flex;
+        align-items: center;
+        min-width: 44px;
+        min-height: 34px;
       }
       .switch input {
+        position: absolute;
         opacity: 0;
-        width: 0;
-        height: 0;
       }
-      .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: var(--hairline);
-        transition: 0.2s;
-        border-radius: var(--rounded-sm); /* Square switches */
+      .track {
+        width: 38px;
+        height: 22px;
+        border-radius: 999px;
+        background: #aab3bf;
+        position: relative;
       }
-      .slider:before {
-        position: absolute;
+      .track:after {
         content: '';
-        height: 14px;
-        width: 14px;
-        left: 2px;
-        bottom: 2px;
-        background-color: white;
-        transition: 0.2s;
-        border-radius: 4px;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #fff;
+        transition: transform 0.15s;
       }
-      input:checked + .slider {
-        background-color: var(--ink);
+      .switch input:checked + .track {
+        background: var(--accent);
       }
-      input:checked + .slider:before {
-        transform: translateX(14px);
+      .switch input:checked + .track:after {
+        transform: translateX(16px);
       }
-
+      .switch input:focus-visible + .track {
+        outline: 3px solid var(--accent);
+        outline-offset: 2px;
+      }
       select,
       input[type='number'] {
-        background-color: var(--elevated);
-        border: 1px solid var(--hairline);
-        border-radius: var(--rounded-sm);
-        color: var(--ink);
-        font-family: inherit;
-        font-size: 12px;
+        width: 145px;
+        min-height: 34px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--card);
+        color: var(--text);
         padding: 6px 8px;
-        width: 130px;
-        outline: none;
       }
-
-      select:focus,
-      input[type='number']:focus {
-        border-color: var(--link);
-        box-shadow: 0 0 0 1px var(--link);
+      button {
+        min-height: 32px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--card);
+        color: var(--text);
+        padding: 6px 10px;
+        font-weight: 600;
       }
-
-      #reloadNote {
+      button:hover {
+        background: var(--bg);
+      }
+      button:focus-visible,
+      select:focus-visible,
+      input:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .danger {
+        color: var(--danger);
+      }
+      .button-row {
+        display: flex;
+        gap: 6px;
+      }
+      .help {
+        margin: 6px 0 0;
+        color: var(--muted);
         font-size: 11px;
-        color: var(--error);
+      }
+      .notice {
         display: none;
+        margin: 0 0 10px;
+        padding: 8px;
+        border-radius: 6px;
+        background: var(--card);
+        color: var(--muted);
         text-align: center;
-        margin-bottom: 12px;
-        font-weight: 500;
       }
-
-      .ghost-btn {
-        background: transparent;
-        border: 1px solid var(--hairline);
-        color: var(--ink);
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.15s;
+      .category-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2px 8px;
+        padding: 5px 0;
       }
-      .ghost-btn:hover {
-        background: var(--hairline);
+      .category-grid label {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        min-height: 32px;
+        font-size: 12px;
       }
-      .danger-btn {
-        color: #e53e3e;
-        border-color: #fc8181;
-      }
-      .danger-btn:hover {
-        background: #fff5f5;
-      }
-
-      #emptyState {
-        display: block; /* shown by default until tab check resolves */
+      .empty {
         text-align: center;
-        padding: 32px 16px;
-        color: var(--mute);
-        font-size: 13px;
-        line-height: 1.4;
+        padding: 28px 12px;
+        color: var(--muted);
       }
       #mainContent {
         display: none;
       }
-
       .footer {
         text-align: center;
+        color: var(--muted);
         font-size: 11px;
-        color: var(--mute);
-        margin-top: 16px;
+        margin-top: 14px;
       }
-
-      .switch input:focus-visible + .slider {
-        box-shadow:
-          0 0 0 2px var(--canvas),
-          0 0 0 4px var(--ink);
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #141b24;
+          --card: #1e2834;
+          --text: #f2f5f8;
+          --muted: #bdc7d2;
+          --border: #3b4858;
+          --accent: #8bb8ff;
+          --danger: #ff9b91;
+        }
       }
-
-      .popup-btn-icon {
-        width: 13px;
-        height: 13px;
-        vertical-align: -2px;
-        display: inline-block;
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="header">
-      <img src="icons/icon48.png" alt="NizViewer" />
-      <h1>
-        NizViewer
-        <span
-          style="
-            font-size: 10px;
-            font-weight: 400;
-            color: var(--mute);
-            letter-spacing: 0;
-            font-family: monospace;
-          "
-          >v1.3.0</span
-        >
-      </h1>
-      <div style="flex-grow: 1"></div>
-      <span style="font-size: 11px; color: var(--mute); margin-right: 6px">Enabled</span>
-      <label class="switch">
-        <input type="checkbox" id="toggleEnabled" aria-label="Enable NizViewer" />
-        <span class="slider"></span>
-      </label>
+    <header class="header">
+      <img src="icons/icon48.png" alt="" />
+      <h1>NizViewer <span class="version">v1.4.0</span></h1>
+      <label class="switch enabled" title="Enable NizViewer"
+        ><input id="toggleEnabled" type="checkbox" aria-label="Enable NizViewer" /><span
+          class="track"
+        ></span
+      ></label>
+    </header>
+    <div id="reloadNote" class="notice" role="status" aria-live="polite"></div>
+    <div id="emptyState" class="empty">
+      Open an Indeed landing page, search results page, or job detail page to use NizViewer.
     </div>
-
-    <div id="reloadNote"></div>
-
-    <div id="emptyState">
-      <img
-        src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23334155%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229%22%2F%3E%3Cpath%20d%3D%22m15.5%208.5-2.2%205.8-5.8%202.2%202.2-5.8%205.8-2.2Z%22%2F%3E%3C%2Fsvg%3E"
-        alt="NizViewer"
-        style="width: 24px; height: 24px; margin-bottom: 8px"
-      />
-      Please navigate to an <strong>Indeed search feed</strong> to use NizViewer.
-    </div>
-
-    <div id="mainContent">
-
-
-      <div
-        style="
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
-          margin-bottom: 8px;
-        "
-      >
-        <div class="section-eyebrow" style="margin-bottom: 0">Data Extraction</div>
-        <div>
-          <button class="ghost-btn" id="btnSelectAll" style="padding: 2px 6px; font-size: 10px">
-            All
-          </button>
-          <button
-            class="ghost-btn"
-            id="btnSelectNone"
-            style="padding: 2px 6px; font-size: 10px; margin-left: 4px"
-          >
-            None
-          </button>
+    <main id="mainContent">
+      <div class="section-head">
+        <h2>Displayed and copied fields</h2>
+        <div class="button-row">
+          <button id="btnSelectAll">All fields</button
+          ><button id="btnSelectNone">No optional fields</button>
         </div>
       </div>
-      <div class="card">
-        <div class="control-row">
-          <span class="label">Salary & Comp</span>
-          <label class="switch">
-            <input type="checkbox" class="pref-toggle" data-pref="salary" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="control-row">
-          <span class="label">Shift Schedule</span>
-          <label class="switch">
-            <input type="checkbox" class="pref-toggle" data-pref="shift" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="control-row">
-          <span class="label">Work Setup</span>
-          <label class="switch">
-            <input type="checkbox" class="pref-toggle" data-pref="workSetup" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="control-row">
-          <span class="label">Experience Req</span>
-          <label class="switch">
-            <input type="checkbox" class="pref-toggle" data-pref="experience" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="control-row">
-          <span class="label">Job Type</span>
-          <label class="switch">
-            <input type="checkbox" class="pref-toggle" data-pref="jobType" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="control-row">
-          <span class="label">Education & Degree</span>
-          <label class="switch">
-            <input type="checkbox" class="pref-toggle" data-pref="degree" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="control-row">
-          <span class="label">Tech Stack</span>
-          <label class="switch">
-            <input type="checkbox" class="pref-toggle" data-pref="techStack" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="control-row">
-          <span class="label">Benefits</span>
-          <label class="switch">
-            <input type="checkbox" class="pref-toggle" data-pref="benefits" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="control-row">
-          <span class="label">Allowances & Perks</span>
-          <label class="switch">
-            <input type="checkbox" class="pref-toggle" data-pref="perks" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="control-row">
-          <span class="label">Age Limits</span>
-          <label class="switch">
-            <input type="checkbox" class="pref-toggle" data-pref="ageLimit" />
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="control-row">
-          <span class="label">Gender Specifics</span>
-          <label class="switch">
-            <input type="checkbox" class="pref-toggle" data-pref="gender" />
-            <span class="slider"></span>
-          </label>
-        </div>
-      </div>
+      <section class="card" id="fieldControls" aria-label="Displayed fields"></section>
+      <p class="help">Only enabled fields are included when copying or exporting jobs.</p>
 
-      <div class="section-eyebrow">Data Management</div>
-      <div class="card">
-        <div class="control-row">
-          <span class="label" id="cacheCountLabel">0 jobs cached</span>
-          <button class="ghost-btn danger-btn" id="btnClearCache">Clear Data</button>
+      <div class="section-head"><h2>Card appearance</h2></div>
+      <section class="card">
+        <div class="row">
+          <label for="density">Information density</label
+          ><select id="density" data-pref="density">
+            <option value="compact">Compact</option>
+            <option value="comfortable">Comfortable</option>
+            <option value="detailed">Always expanded</option>
+          </select>
         </div>
-      </div>
-    </div>
+        <div class="row">
+          <label for="theme">Theme</label
+          ><select id="theme" data-pref="theme">
+            <option value="auto">Follow system</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+      </section>
 
-    <div class="footer">
-      <div style="margin-bottom: 8px">
-        <a
-          href="https://github.com/umairhex"
-          target="_blank"
-          rel="noopener noreferrer"
-          style="color: var(--ink); text-decoration: none; margin: 0 4px"
-          >GitHub</a
-        >
-        &bull;
-        <a
-          href="https://www.linkedin.com/in/umairhex"
-          target="_blank"
-          rel="noopener noreferrer"
-          style="color: var(--ink); text-decoration: none; margin: 0 4px"
-          >LinkedIn</a
-        >
-        &bull;
-        <a
-          href="https://umairrx.dev"
-          target="_blank"
-          rel="noopener noreferrer"
-          style="color: var(--ink); text-decoration: none; margin: 0 4px"
-          >Portfolio</a
-        >
-      </div>
-      <div style="margin-bottom: 8px">
-        <a
-          href="https://twitter.com/umairhex"
-          target="_blank"
-          rel="noopener noreferrer"
-          style="color: var(--mute); text-decoration: none; margin: 0 4px"
-          >Twitter</a
-        >
-        &bull;
-        <a
-          href="https://www.instagram.com/umairhex"
-          target="_blank"
-          rel="noopener noreferrer"
-          style="color: var(--mute); text-decoration: none; margin: 0 4px"
-          >Instagram</a
-        >
-      </div>
-    </div>
+      <div class="section-head"><h2>Job age</h2></div>
+      <section class="card">
+        <div class="row">
+          <label for="freshJobDays">Fresh highlight (days)</label
+          ><input id="freshJobDays" data-pref="freshJobDays" type="number" min="0" max="90" />
+        </div>
+        <div class="row">
+          <label for="hideOldJobs">Hide older jobs</label
+          ><label class="switch"
+            ><input id="hideOldJobs" data-pref="hideOldJobs" type="checkbox" /><span
+              class="track"
+            ></span
+          ></label>
+        </div>
+        <div class="row">
+          <label for="oldJobDays">Older than (days)</label
+          ><input id="oldJobDays" data-pref="oldJobDays" type="number" min="1" max="365" />
+        </div>
+      </section>
+
+      <div class="section-head"><h2>Technology categories</h2></div>
+      <section class="card"><div id="categoryControls" class="category-grid"></div></section>
+      <p class="help">
+        Unchecked categories stay out of cards while the underlying extraction remains available.
+      </p>
+
+      <div class="section-head"><h2>Data and defaults</h2></div>
+      <section class="card">
+        <div class="row">
+          <span id="cacheCountLabel">0 jobs cached</span
+          ><button class="danger" id="btnClearCache">Clear cached jobs</button>
+        </div>
+        <div class="row"><span>Preferences</span><button id="btnReset">Reset defaults</button></div>
+      </section>
+    </main>
+    <footer class="footer">
+      NizViewer analyses text shown by Indeed; confirm important details in the original posting.
+    </footer>
     <script src="scripts/browser-polyfill.js"></script>
-    <script src="scripts/icons.js"></script>
+    <script src="scripts/techKeywords.js"></script>
     <script src="popup.js"></script>
   </body>
 </html>

@@ -3,7 +3,7 @@
   var jobKeyLike = (k) => /^[a-f0-9]{16}$/i.test(k);
   var foundJobs = new Map();
   function post(type, data) {
-    window.postMessage({ source: 'nizviewer', type, ...data }, '*');
+    window.postMessage({ source: 'nizviewer', type, ...data }, location.origin);
   }
   function toIsoFromAgeDays(days) {
     if (typeof days !== 'number' || !isFinite(days) || days < 0 || days > 3650) return null;
@@ -45,14 +45,8 @@
       else if (typeof card.salary === 'string' && /\d/.test(card.salary)) salary = card.salary;
       const titleObj = card.displayTitle || card.title || card.normTitle || '';
       const locationObj = card.location || card.formattedLocation || '';
-      const fullText = (
-        titleObj +
-        ' ' +
-        (card.snippet || '') +
-        ' ' +
-        locationObj
-      ).toLowerCase();
-      
+      const fullText = (titleObj + ' ' + (card.snippet || '') + ' ' + locationObj).toLowerCase();
+
       out.push({
         jk,
         dateIso,
@@ -390,36 +384,30 @@
         const text = script.textContent?.trim();
         if (!text || text.length < 50 || text.length > 5e5) continue;
         const jkMatches = text.matchAll(/"(?:jk|jobKey|jobkey)"\s*:\s*"([a-f0-9]{16})"/gi);
+        try {
+          const json = JSON.parse(text);
+          scanObject(json, 'script-json', results, seen, 0, 25);
+          continue;
+        } catch {}
         for (const m of jkMatches) {
           const jk = m[1];
-          try {
-            const json = JSON.parse(text);
-            scanObject(json, 'script-json', results, seen, 0, 25);
-          } catch {
-            const dateMatch = text.match(
-              new RegExp(
-                `"${jk}"[^}]*?"(?:datePosted|age|ageInDays)"\\s*:\\s*["']?([^"',}]+)`,
-                'i',
-              ),
-            );
-            const companyMatch = text.match(
-              new RegExp(
-                `"${jk}"[^}]*?"(?:companyName|employerName)"\\s*:\\s*["']?([^"',}]+)`,
-                'i',
-              ),
-            );
-            if (dateMatch) {
-              const val = dateMatch[1];
-              const iso =
-                toIsoIfPossible(val) ||
-                (parseInt(val, 10) >= 0 ? toIsoFromAgeDays(parseInt(val, 10)) : null);
-              if (iso) {
-                const info = { dateIso: iso, companyName: companyMatch ? companyMatch[1] : void 0 };
-                const dataStr = JSON.stringify(info);
-                if (foundJobs.get(jk) !== dataStr) {
-                  foundJobs.set(jk, dataStr);
-                  results.push({ jk, ...info });
-                }
+          const dateMatch = text.match(
+            new RegExp(`"${jk}"[^}]*?"(?:datePosted|age|ageInDays)"\\s*:\\s*["']?([^"',}]+)`, 'i'),
+          );
+          const companyMatch = text.match(
+            new RegExp(`"${jk}"[^}]*?"(?:companyName|employerName)"\\s*:\\s*["']?([^"',}]+)`, 'i'),
+          );
+          if (dateMatch) {
+            const val = dateMatch[1];
+            const iso =
+              toIsoIfPossible(val) ||
+              (parseInt(val, 10) >= 0 ? toIsoFromAgeDays(parseInt(val, 10)) : null);
+            if (iso) {
+              const info = { dateIso: iso, companyName: companyMatch ? companyMatch[1] : void 0 };
+              const dataStr = JSON.stringify(info);
+              if (foundJobs.get(jk) !== dataStr) {
+                foundJobs.set(jk, dataStr);
+                results.push({ jk, ...info });
               }
             }
           }
@@ -502,12 +490,27 @@
     };
   }
   installFetchHook();
+  let interestedJksSignature = '';
   window.addEventListener('message', (ev) => {
     const d = ev.data;
-    if (!d || d.source !== 'nizviewer' || d.type !== 'INTERESTED_JKS') return;
+    if (
+      ev.source !== window ||
+      ev.origin !== location.origin ||
+      !d ||
+      d.source !== 'nizviewer' ||
+      d.type !== 'INTERESTED_JKS' ||
+      !Array.isArray(d.jks)
+    )
+      return;
+    const signature = Array.from(new Set(d.jks.filter(jobKeyLike)))
+      .sort()
+      .join(',');
+    if (!signature || signature === interestedJksSignature) return;
+    interestedJksSignature = signature;
     scanForDates();
   });
-  setInterval(scanForDates, 2e3);
   scanForDates();
   setTimeout(scanForDates, 500);
+  setTimeout(scanForDates, 2000);
+  setTimeout(scanForDates, 5000);
 })();

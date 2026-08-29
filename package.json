@@ -1,7 +1,7 @@
 {
   "name": "nizviewer",
-  "version": "1.3.0",
-  "description": "Advanced Indeed Job Data Viewer",
+  "version": "1.5.0",
+  "description": "Reveal Indeed job posting dates, salary, work setup, experience, shifts, and tech stacks directly on job cards.",
   "repository": {
     "type": "git",
     "url": "https://github.com/umairhex/nizviewer.git"
@@ -9,7 +9,7 @@
   "bugs": {
     "url": "https://github.com/umairhex/nizviewer/issues"
   },
-  "homepage": "https://github.com/umairhex/nizviewer#readme",
+  "homepage": "https://umairhex.github.io/nizviewer/",
   "scripts": {
     "lint": "eslint . && web-ext lint",
     "build": "node scripts/build.js all",
