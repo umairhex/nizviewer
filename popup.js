@@ -126,14 +126,16 @@
         const value = document.createElement('input');
         value.type = 'number'; value.min = '0'; value.max = rule.field === 'age' ? '365' : '25'; value.step = '0.5'; value.value = rule.value;
         const color = document.createElement('input');
-        color.type = 'color'; color.value = /^#[0-9a-f]{6}$/i.test(rule.color) ? rule.color : '#eaf8f1';
+        color.type = 'text'; color.inputMode = 'text'; color.placeholder = '#eaf8f1';
+        color.maxLength = 9; color.value = rule.color;
+        color.setAttribute('aria-label', 'Card color hex value');
         const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Remove'; remove.dataset.removeRule = String(index);
         row.append(field, operator, value, color, remove); colorRules.appendChild(row);
         const saveRule = () => {
           const current = prefs.cardColorRules[index]; if (!current) return;
           current.field = field.value; current.operator = operator.value;
           current.value = Math.min(Number(current.field === 'age' ? 365 : 25), Math.max(0, Number(value.value) || 0));
-          current.color = /^#[0-9a-f]{6}$/i.test(color.value) ? color.value.toLowerCase() : '#eaf8f1';
+          current.color = /^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(color.value.trim()) ? color.value.trim().toLowerCase() : '#eaf8f1';
           prefs.cardColorRules = normalizeCardColorRules(prefs.cardColorRules); savePrefs('Color rule saved.'); syncControls();
         };
         field.addEventListener('change', saveRule); operator.addEventListener('change', saveRule); value.addEventListener('change', saveRule); color.addEventListener('change', saveRule);
