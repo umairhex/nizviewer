@@ -119,6 +119,18 @@ h3,
 p {
   text-wrap: pretty;
 }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+input,
+select,
+textarea {
+  font-weight: 500;
+}
 h1 {
   max-width: 850px;
   margin: 0;
