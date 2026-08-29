@@ -337,8 +337,17 @@
   box-shadow: inset 4px 0 0 #2f9e5b !important;
 }
 .nizviewer-card-hidden-old,
-.nizviewer-filter-hidden {
+.nizviewer-filter-hidden,
+.nizviewer-experience-hidden {
   display: none !important;
+}
+.nizviewer-card-fresh[style*="--nizviewer-card-color"],
+.nizviewer-card-hidden-old[style*="--nizviewer-card-color"],
+.nizviewer-experience-hidden[style*="--nizviewer-card-color"],
+[class*="cardOutline"][style*="--nizviewer-card-color"],
+.tapItem[style*="--nizviewer-card-color"],
+[data-testid="jobListing"][style*="--nizviewer-card-color"] {
+  background-color: var(--nizviewer-card-color) !important;
 }
 .nizviewer-feed-toolbar {
   box-sizing: border-box !important;

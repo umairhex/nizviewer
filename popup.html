@@ -85,6 +85,9 @@
       .row:last-child {
         border: 0;
       }
+      .color-rule { gap: 6px; align-items: center; flex-wrap: wrap; }
+      .color-rule select, .color-rule input[type='number'] { flex: 1 1 105px; min-width: 0; }
+      .color-rule input[type='color'] { width: 42px; height: 32px; padding: 2px; }
       .row label:first-child,
       .row > span:first-child {
         font-weight: 600;
@@ -225,7 +228,7 @@
   <body>
     <header class="header">
       <img src="icons/icon48.png" alt="" />
-      <h1>NizViewer <span class="version">v1.4.0</span></h1>
+      <h1>NizViewer <span class="version">v1.5.4</span></h1>
       <label class="switch enabled" title="Enable NizViewer"
         ><input id="toggleEnabled" type="checkbox" aria-label="Enable NizViewer" /><span
           class="track"
@@ -285,6 +288,25 @@
           <label for="oldJobDays">Older than (days)</label
           ><input id="oldJobDays" data-pref="oldJobDays" type="number" min="1" max="365" />
         </div>
+        <div class="row">
+          <label for="hideByExperience">Hide roles above experience</label
+          ><label class="switch"
+            ><input id="hideByExperience" data-pref="hideByExperience" type="checkbox" /><span
+              class="track"
+            ></span
+          ></label>
+        </div>
+        <div class="row">
+          <label for="maxExperienceYears">Maximum required experience (years)</label
+          ><input id="maxExperienceYears" data-pref="maxExperienceYears" type="number" min="0" max="25" step="0.5" />
+        </div>
+      </section>
+
+      <div class="section-head"><h2>Conditional card colors</h2></div>
+      <section class="card" id="colorRulesCard">
+        <p class="help">The first matching rule wins. Colors apply to the whole Indeed result card.</p>
+        <div id="colorRules" aria-live="polite"></div>
+        <button id="addColorRule" type="button">Add color rule</button>
       </section>
 
       <div class="section-head"><h2>Technology categories</h2></div>

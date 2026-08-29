@@ -1,6 +1,6 @@
 {
   "name": "nizviewer",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "description": "Reveal Indeed job posting dates, salary, work setup, experience, shifts, and tech stacks directly on job cards.",
   "repository": {
     "type": "git",

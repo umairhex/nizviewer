@@ -49,10 +49,11 @@
   const FEED_FETCH_MAX_ATTEMPTS = 3;
   const FEED_FETCH_RETRY_DELAYS_MS = [2000, 10000, 30000];
   let cache = {};
-  let badgePrefs = { ...DEFAULT_BADGE_PREFS };
+  let badgePrefs = normalizeBadgePrefs(DEFAULT_BADGE_PREFS);
   const expandedJobs = new Set();
   const fetchStates = new Map();
   let revealOldJobs = false;
+  let revealExperienceJobs = false;
   const feedView = {
     tech: '',
     setup: '',
@@ -351,7 +352,7 @@
       if (localRes?.[CACHE_KEY]) cache = localRes[CACHE_KEY];
       if (typeof localRes?.extensionEnabled === 'boolean')
         extensionEnabled = localRes.extensionEnabled;
-      if (localRes?.badgePrefs) badgePrefs = { ...badgePrefs, ...localRes.badgePrefs };
+      if (localRes?.badgePrefs) badgePrefs = normalizeBadgePrefs(localRes.badgePrefs);
     } catch {}
   }
   let compiledTechRegexes = null;
@@ -739,11 +740,21 @@
         !revealOldJobs &&
         daysAgo !== null &&
         daysAgo > oldDays;
+      const experienceYears = parseExperienceUpperBound(entry?.experience);
+      const isExperienceHidden =
+        extensionEnabled &&
+        badgePrefs.hideByExperience === true &&
+        !revealExperienceJobs &&
+        experienceYears >= 0 &&
+        experienceYears > Number(badgePrefs.maxExperienceYears);
       jobCard?.classList.toggle('nizviewer-card-fresh', isFresh);
       jobItem?.classList.toggle('nizviewer-card-hidden-old', isOldHidden);
+      jobItem?.classList.toggle('nizviewer-experience-hidden', isExperienceHidden);
       if (jobCard && jobCard !== jobItem) {
         jobCard.classList.toggle('nizviewer-card-hidden-old', isOldHidden);
+        jobCard.classList.toggle('nizviewer-experience-hidden', isExperienceHidden);
       }
+      applyCardColor(jobCard || jobItem, entry, daysAgo, experienceYears);
     }
 
     const wrapper = ensureBadgeWrapper(jk);
@@ -1141,6 +1152,32 @@
     }
   }
 
+  function compareColorRule(actual, operator, expected) {
+    if (!Number.isFinite(actual) || !Number.isFinite(expected)) return false;
+    if (operator === 'lte') return actual <= expected;
+    if (operator === 'gt') return actual > expected;
+    if (operator === 'gte') return actual >= expected;
+    if (operator === 'eq') return actual === expected;
+    return actual < expected;
+  }
+
+  function parseExperienceUpperBound(value) {
+    const text = String(value || '');
+    if (/entry|no\s+experience|fresh\s+grad/i.test(text)) return 0;
+    const range = text.match(/(\d+(?:\.\d+)?)\s*(?:to|[-–—])\s*(\d+(?:\.\d+)?)/i);
+    if (range) return Number(range[2]);
+    return parseExperienceValue(text);
+  }
+
+  function applyCardColor(card, entry, daysAgo, experienceYears) {
+    if (!card) return;
+    const match = normalizeCardColorRules(badgePrefs.cardColorRules).find((rule) =>
+      compareColorRule(rule.field === 'age' ? daysAgo : experienceYears, rule.operator, rule.value),
+    );
+    if (match) card.style.setProperty('--nizviewer-card-color', match.color);
+    else card.style.removeProperty('--nizviewer-card-color');
+  }
+
   const directDetailFetches = new Map();
   function extractDetailTextFromHtml(html) {
     const doc = new window.DOMParser().parseFromString(html, 'text/html');
@@ -1414,7 +1451,8 @@
         return (
           item &&
           !item.classList.contains('nizviewer-filter-hidden') &&
-          !item.classList.contains('nizviewer-card-hidden-old')
+          !item.classList.contains('nizviewer-card-hidden-old') &&
+          !item.classList.contains('nizviewer-experience-hidden')
         );
       });
   }
@@ -1630,6 +1668,7 @@
       ['copy', 'Copy visible'],
       ['export', 'Export CSV'],
       ['reveal', 'Show older jobs'],
+      ['reveal-experience', 'Show experience matches'],
       ['reset', 'Reset filters'],
     ]) {
       const button = document.createElement('button');
@@ -1663,6 +1702,10 @@
         revealOldJobs = !revealOldJobs;
         renderAllVisible();
       }
+      if (action === 'reveal-experience') {
+        revealExperienceJobs = !revealExperienceJobs;
+        renderAllVisible();
+      }
       if (action === 'reset') {
         Object.assign(feedView, {
           tech: '',
@@ -1693,14 +1736,24 @@
     const hidden = jks.filter((jk) =>
       getJobItem(jk)?.classList.contains('nizviewer-card-hidden-old'),
     ).length;
+    const experienceHidden = jks.filter((jk) =>
+      getJobItem(jk)?.classList.contains('nizviewer-experience-hidden'),
+    ).length;
     const visible = getVisibleFeedJks().length;
-    summary.textContent = `${visible} visible · ${full} full · ${pending} pending${failed ? ` · ${failed} failed` : ''}${hidden ? ` · ${hidden} older hidden` : ''}`;
+    summary.textContent = `${visible} visible · ${full} full · ${pending} pending${failed ? ` · ${failed} failed` : ''}${hidden ? ` · ${hidden} older hidden` : ''}${experienceHidden ? ` · ${experienceHidden} experience hidden` : ''}`;
     const reveal = document.querySelector('#nizviewer-feed-toolbar [data-action="reveal"]');
     if (reveal) {
       reveal.hidden = badgePrefs.hideOldJobs !== true;
       reveal.textContent = revealOldJobs
         ? 'Hide older jobs'
         : `Show older jobs${hidden ? ` (${hidden})` : ''}`;
+    }
+    const experienceReveal = document.querySelector('#nizviewer-feed-toolbar [data-action="reveal-experience"]');
+    if (experienceReveal) {
+      experienceReveal.hidden = badgePrefs.hideByExperience !== true;
+      experienceReveal.textContent = revealExperienceJobs
+        ? 'Hide experience matches'
+        : `Show experience matches${experienceHidden ? ` (${experienceHidden})` : ''}`;
     }
   }
 
@@ -1720,6 +1773,12 @@
       });
       document.querySelectorAll('.nizviewer-card-hidden-old').forEach((el) => {
         el.classList.remove('nizviewer-card-hidden-old');
+      });
+      document.querySelectorAll('.nizviewer-experience-hidden').forEach((el) => {
+        el.classList.remove('nizviewer-experience-hidden');
+      });
+      document.querySelectorAll('[style*="--nizviewer-card-color"]').forEach((el) => {
+        el.style.removeProperty('--nizviewer-card-color');
       });
       document.querySelectorAll('.nizviewer-filter-hidden').forEach((el) => {
         el.classList.remove('nizviewer-filter-hidden');
@@ -2126,8 +2185,9 @@
         extensionEnabled = msg.enabled;
         renderAllVisible();
       } else if (msg.type === 'PREFS_CHANGED') {
-        badgePrefs = { ...badgePrefs, ...msg.prefs };
+        badgePrefs = normalizeBadgePrefs(msg.prefs);
         revealOldJobs = false;
+        revealExperienceJobs = false;
         renderAllVisible();
       } else if (msg.type === 'CACHE_CLEARED') {
         cache = {};

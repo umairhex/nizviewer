@@ -28,6 +28,8 @@ export default [
         ICONS: 'readonly',
         browserApi: 'readonly',
         DEFAULT_BADGE_PREFS: 'readonly',
+        normalizeBadgePrefs: 'readonly',
+        normalizeCardColorRules: 'readonly',
         location: 'readonly',
         confirm: 'readonly',
         navigator: 'readonly',
@@ -40,7 +42,7 @@ export default [
           caughtErrors: 'none',
           ignoreRestSiblings: true,
           varsIgnorePattern:
-            '^(browserApi|DEFAULT_BADGE_PREFS|TECH_KEYWORDS|TECH_CATEGORIES|TECH_CATEGORY_MAP|ICONS)$',
+            '^(browserApi|DEFAULT_BADGE_PREFS|normalizeBadgePrefs|normalizeCardColorRules|TECH_KEYWORDS|TECH_CATEGORIES|TECH_CATEGORY_MAP|ICONS)$',
         },
       ],
       'no-undef': 'error',

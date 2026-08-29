@@ -24,7 +24,8 @@
     const empty = byId('emptyState');
     const fieldControls = byId('fieldControls');
     const categoryControls = byId('categoryControls');
-    let prefs = { ...DEFAULT_BADGE_PREFS, hiddenTechCategories: {} };
+    const colorRules = byId('colorRules');
+    let prefs = normalizeBadgePrefs(DEFAULT_BADGE_PREFS);
 
     function showNote(message, error = false) {
       note.textContent = message;
@@ -107,6 +108,37 @@
         input.checked = prefs.hiddenTechCategories?.[input.dataset.category] !== true;
       });
       byId('oldJobDays').disabled = !prefs.hideOldJobs;
+      byId('maxExperienceYears').disabled = !prefs.hideByExperience;
+      renderColorRules();
+    }
+
+    function renderColorRules() {
+      colorRules.replaceChildren();
+      prefs.cardColorRules.forEach((rule, index) => {
+        const row = document.createElement('div');
+        row.className = 'color-rule row';
+        const field = document.createElement('select');
+        [['age', 'Posting age'], ['experience', 'Experience']].forEach(([v, t]) => { const option = document.createElement('option'); option.value = v; option.textContent = t; field.appendChild(option); });
+        field.value = rule.field;
+        const operator = document.createElement('select');
+        [['lt', 'less than'], ['lte', 'at most'], ['gt', 'more than'], ['gte', 'at least'], ['eq', 'equals']].forEach(([v, t]) => { const option = document.createElement('option'); option.value = v; option.textContent = t; operator.appendChild(option); });
+        operator.value = rule.operator;
+        const value = document.createElement('input');
+        value.type = 'number'; value.min = '0'; value.max = rule.field === 'age' ? '365' : '25'; value.step = '0.5'; value.value = rule.value;
+        const color = document.createElement('input');
+        color.type = 'color'; color.value = /^#[0-9a-f]{6}$/i.test(rule.color) ? rule.color : '#eaf8f1';
+        const remove = document.createElement('button'); remove.type = 'button'; remove.textContent = 'Remove'; remove.dataset.removeRule = String(index);
+        row.append(field, operator, value, color, remove); colorRules.appendChild(row);
+        const saveRule = () => {
+          const current = prefs.cardColorRules[index]; if (!current) return;
+          current.field = field.value; current.operator = operator.value;
+          current.value = Math.min(Number(current.field === 'age' ? 365 : 25), Math.max(0, Number(value.value) || 0));
+          current.color = /^#[0-9a-f]{6}$/i.test(color.value) ? color.value.toLowerCase() : '#eaf8f1';
+          prefs.cardColorRules = normalizeCardColorRules(prefs.cardColorRules); savePrefs('Color rule saved.'); syncControls();
+        };
+        field.addEventListener('change', saveRule); operator.addEventListener('change', saveRule); value.addEventListener('change', saveRule); color.addEventListener('change', saveRule);
+      });
+      byId('addColorRule').disabled = prefs.cardColorRules.length >= 12;
     }
 
     async function load() {
@@ -123,11 +155,7 @@
           'nizViewerCache',
         ]);
         toggle.checked = result.extensionEnabled !== false;
-        prefs = {
-          ...DEFAULT_BADGE_PREFS,
-          ...(result.badgePrefs || {}),
-          hiddenTechCategories: { ...(result.badgePrefs?.hiddenTechCategories || {}) },
-        };
+        prefs = normalizeBadgePrefs(result.badgePrefs);
         syncControls();
         const count = Object.keys(result.nizViewerCache || {}).length;
         byId('cacheCountLabel').textContent = `${count} cached job${count === 1 ? '' : 's'}`;
@@ -176,6 +204,25 @@
           : 'Older jobs remain visible.',
       );
     });
+    byId('hideByExperience').addEventListener('change', (event) => {
+      prefs.hideByExperience = event.target.checked;
+      syncControls();
+      savePrefs(event.target.checked ? 'High-experience roles will be hidden.' : 'Experience filtering disabled.');
+    });
+    byId('maxExperienceYears').addEventListener('change', (event) => {
+      prefs.maxExperienceYears = Math.min(25, Math.max(0, Number(event.target.value) || 0));
+      syncControls(); savePrefs('Experience limit updated.');
+    });
+    byId('addColorRule').addEventListener('click', () => {
+      if (prefs.cardColorRules.length >= 12) return;
+      prefs.cardColorRules.push({ id: `rule-${Date.now()}`, field: 'age', operator: 'lt', value: 7, color: '#eaf8f1' });
+      syncControls(); savePrefs('Color rule added.');
+    });
+    colorRules.addEventListener('click', (event) => {
+      const index = Number(event.target?.dataset?.removeRule);
+      if (!Number.isInteger(index) || !prefs.cardColorRules[index]) return;
+      prefs.cardColorRules.splice(index, 1); syncControls(); savePrefs('Color rule removed.');
+    });
     byId('btnSelectAll').addEventListener('click', () => {
       for (const key of Object.keys(FIELD_LABELS)) prefs[key] = true;
       syncControls();
@@ -187,7 +234,7 @@
       savePrefs('Optional fields hidden.');
     });
     byId('btnReset').addEventListener('click', () => {
-      prefs = { ...DEFAULT_BADGE_PREFS, hiddenTechCategories: {} };
+      prefs = normalizeBadgePrefs(DEFAULT_BADGE_PREFS);
       syncControls();
       savePrefs('Default preferences restored.');
     });
