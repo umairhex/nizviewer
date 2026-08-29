@@ -19,6 +19,7 @@ NizViewer is a free browser extension for Chrome and Firefox that shows the real
 - **Compact, Expandable Cards** — Primary details stay scannable while secondary fields and source notes remain available on demand
 - **Search Tools** — Filter by technology, work setup, posting age, salary availability, and experience; sort extracted results
 - **Bulk Workflows** — Copy visible rows and export CSV for follow-up research
+- **Application Contacts** — Detects email addresses and phone numbers included in job application instructions
 - **Accessible Feedback** — Full, partial, pending, and failed states with visible retry controls and screen-reader announcements
 - **Personalisation** — Field selection, density, theme, age thresholds, and technology-category visibility
 - **Contextual Popup** — Settings are available on Indeed landing, search, and job-detail pages

@@ -43,7 +43,7 @@
   };
   const CACHE_KEY = 'nizViewerCache';
   const CACHE_TTL_MS = 14 * 24 * 60 * 60 * 1000;
-  const DETAIL_SCAN_VERSION = 3;
+  const DETAIL_SCAN_VERSION = 4;
   const DETAIL_FETCH_TIMEOUT_MS = 15000;
   const FEED_FETCH_CONCURRENCY = 2;
   const FEED_FETCH_MAX_ATTEMPTS = 3;
@@ -300,6 +300,22 @@
         break;
       }
     }
+    let applyPhone;
+    const phonePattern = /(?<!\d)(?:\+?\d[\d\s().-]{7,}\d)(?!\d)/g;
+    for (const match of Array.from(text.matchAll(phonePattern)).reverse()) {
+      const candidate = match[0].trim();
+      const digits = candidate.replace(/\D/g, '');
+      const context = text.slice(Math.max(0, match.index - 220), match.index + 220);
+      if (
+        digits.length >= 8 &&
+        digits.length <= 15 &&
+        !/(?:salary|pay\s*:|per\s+(?:month|year)|commission|target)/i.test(context) &&
+        /(?:apply|call|contact|phone|whatsapp|reach|send)/i.test(context)
+      ) {
+        applyPhone = candidate;
+        break;
+      }
+    }
     const subjectMatch = applicationContext.match(
       /subject(?:\s+(?:header|line))?\s*[:=-]\s*["“']?([A-Z0-9][A-Z0-9 ,_+./&()-]{4,120}?)["”']?(?=\.|\s*$)/i,
     );
@@ -319,6 +335,7 @@
       gender,
       applyEmail,
       applySubject,
+      applyPhone,
     };
   }
   function debounce(fn, ms) {
@@ -563,6 +580,7 @@
       perks: (entry.perks || '').replace(/[\t\r\n]+/g, ' ').trim(),
       applyEmail: (entry.applyEmail || '').replace(/[\t\r\n]+/g, ' ').trim(),
       applySubject: (entry.applySubject || '').replace(/[\t\r\n]+/g, ' ').trim(),
+      applyPhone: (entry.applyPhone || '').replace(/[\t\r\n]+/g, ' ').trim(),
     };
   }
 
@@ -584,6 +602,7 @@
       ['Perks', 'perks', badgePrefs.perks],
       ['Apply email', 'applyEmail', true],
       ['Email subject', 'applySubject', true],
+      ['Apply phone', 'applyPhone', true],
     ];
     return columns.filter((column) => column[2]);
   }
@@ -741,6 +760,7 @@
       ts: entry?.techStack,
       ae: entry?.applyEmail,
       as: entry?.applySubject,
+      ap: entry?.applyPhone,
       be: entry?.benefits,
       pe: entry?.perks,
       ag: entry?.ageLimit,
@@ -952,6 +972,16 @@
               card.appendChild(subject);
             }
           }
+          if (entry.applyPhone) {
+            const phone = document.createElement('a');
+            phone.className = 'nizviewer-apply-phone';
+            phone.href = `tel:${entry.applyPhone.replace(/[^+\d]/g, '')}`;
+            phone.textContent = `Apply by phone: ${entry.applyPhone}`;
+            phone.title = `Call ${entry.applyPhone} about this job`;
+            phone.setAttribute('aria-label', phone.title);
+            phone.addEventListener('click', (ev) => ev.stopPropagation());
+            card.appendChild(phone);
+          }
           const source = document.createElement('p');
           source.className = 'nizviewer-source-note';
           source.textContent =
@@ -1158,6 +1188,7 @@
         gender,
         applyEmail,
         applySubject,
+        applyPhone,
       } = parseDetailHtml(detailText);
 
       cache[jk] = {
@@ -1175,6 +1206,7 @@
         gender: gender ?? existing.gender,
         applyEmail: applyEmail ?? existing.applyEmail,
         applySubject: applySubject ?? existing.applySubject,
+        applyPhone: applyPhone ?? existing.applyPhone,
         savedAt: Date.now(),
         deepScanned: true,
         detailScanVersion: DETAIL_SCAN_VERSION,
@@ -1301,6 +1333,7 @@
       gender,
       applyEmail,
       applySubject,
+      applyPhone,
     } = parseDetailHtml(text);
 
     let changed = false;
@@ -1352,6 +1385,10 @@
     }
     if (applySubject && !existing?.applySubject) {
       updated.applySubject = applySubject;
+      changed = true;
+    }
+    if (applyPhone && !existing?.applyPhone) {
+      updated.applyPhone = applyPhone;
       changed = true;
     }
 
@@ -1871,6 +1908,7 @@
           gender,
           applyEmail,
           applySubject,
+          applyPhone,
         } = parseDetailHtml(combinedText);
         const needsUpdate =
           (salary && salary !== existing.salary) ||
@@ -1886,7 +1924,8 @@
           (ageLimit && ageLimit !== existing.ageLimit) ||
           (gender && gender !== existing.gender) ||
           (applyEmail && applyEmail !== existing.applyEmail) ||
-          (applySubject && applySubject !== existing.applySubject);
+          (applySubject && applySubject !== existing.applySubject) ||
+          (applyPhone && applyPhone !== existing.applyPhone);
         if (needsUpdate || !existing.deepScanned) {
           cache[jk] = {
             ...existing,
@@ -1903,6 +1942,7 @@
             gender: gender ?? existing.gender,
             applyEmail: applyEmail ?? existing.applyEmail,
             applySubject: applySubject ?? existing.applySubject,
+            applyPhone: applyPhone ?? existing.applyPhone,
             savedAt: Date.now(),
             deepScanned: true,
             detailScanVersion: DETAIL_SCAN_VERSION,
@@ -1966,8 +2006,15 @@
               ? (item.experience ?? existing?.experience)
               : existing?.experience;
 
+            let applyEmail = existing?.applyEmail;
+            let applySubject = existing?.applySubject;
+            let applyPhone = existing?.applyPhone;
             if (acceptsDetailFields && !item.deepScanned && item.fullText) {
               const text = item.fullText;
+              const applicationDetails = parseDetailHtml(text);
+              applyEmail = applicationDetails.applyEmail ?? applyEmail;
+              applySubject = applicationDetails.applySubject ?? applySubject;
+              applyPhone = applicationDetails.applyPhone ?? applyPhone;
               let taxoShift, taxoExp;
               if (Array.isArray(item.taxoAttrs)) {
                 for (const group of item.taxoAttrs) {
@@ -2051,6 +2098,9 @@
                 ? (item.ageLimit ?? existing?.ageLimit)
                 : existing?.ageLimit,
               gender: acceptsDetailFields ? (item.gender ?? existing?.gender) : existing?.gender,
+              applyEmail,
+              applySubject,
+              applyPhone,
               savedAt: Date.now(),
               deepScanned: item.deepScanned || existing?.deepScanned,
             };

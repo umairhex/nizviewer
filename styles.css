@@ -215,7 +215,8 @@
   font-size: 11px !important;
   line-height: 1.45 !important;
 }
-.nizviewer-apply-email {
+.nizviewer-apply-email,
+.nizviewer-apply-phone {
   display: inline-flex !important;
   align-items: center !important;
   width: fit-content !important;
@@ -232,7 +233,9 @@
   text-decoration: none !important;
 }
 .nizviewer-apply-email:hover,
-.nizviewer-apply-email:focus-visible {
+.nizviewer-apply-email:focus-visible,
+.nizviewer-apply-phone:hover,
+.nizviewer-apply-phone:focus-visible {
   filter: brightness(0.92);
 }
 .nizviewer-apply-subject {
