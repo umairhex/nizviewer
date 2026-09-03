@@ -246,7 +246,7 @@
   font-weight: 700 !important;
   letter-spacing: 0.02em !important;
 }
-.nizviewer-scrape-row.nizviewer-x-tech {
+.nizviewer-scrape-row.nizviewer-x-techstack {
   grid-column: 1/-1 !important;
 }
 .nizviewer-source-note {
@@ -296,11 +296,13 @@
 .nizviewer-density-comfortable .nizviewer-tech-stack-card {
   padding: 11px 12px !important;
 }
-.nizviewer-density-comfortable .nizviewer-info-row {
+.nizviewer-density-comfortable .nizviewer-info-row,
+.nizviewer-density-comfortable .nizviewer-scrape-row {
   padding-top: 5px !important;
   padding-bottom: 5px !important;
 }
-.nizviewer-density-detailed .nizviewer-tech-stack-rows {
+.nizviewer-density-detailed .nizviewer-tech-stack-rows,
+.nizviewer-density-detailed .nizviewer-scrape {
   grid-template-columns: 1fr !important;
 }
 .nizviewer-card-actions {
@@ -480,7 +482,8 @@ td.resultContent {
   box-sizing: border-box !important;
 }
 @media (max-width: 560px) {
-  .nizviewer-tech-stack-rows {
+  .nizviewer-tech-stack-rows,
+  .nizviewer-scrape {
     grid-template-columns: 1fr !important;
   }
   .nizviewer-card-action,

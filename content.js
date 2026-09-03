@@ -516,6 +516,45 @@
     return img;
   }
 
+  function cleanField(value) {
+    return String(value || '')
+      .replace(/[\t\r\n]+/g, ' ')
+      .trim();
+  }
+
+  function formatPostedIso(entry) {
+    if (!entry?.datePostedIso) return '';
+    const date = new Date(entry.datePostedIso);
+    return isNaN(date.getTime()) ? '' : date.toISOString().split('T')[0];
+  }
+
+  function jobUrlFor(jk) {
+    return `${location.origin}/viewjob?jk=${encodeURIComponent(jk)}`;
+  }
+
+  // Every field that comes straight from the cache entry, cleaned once, so the
+  // CSV export, the clipboard row and the scraper block cannot drift apart.
+  function getEntryFields(entry) {
+    const e = entry || {};
+    return {
+      posted: formatPostedIso(e),
+      workSetup: cleanField(e.workSetup),
+      jobType: cleanField(e.jobType),
+      degree: cleanField(e.degree),
+      salary: cleanField(e.salary),
+      experience: cleanField(e.experience),
+      shift: cleanField(e.shift),
+      techStack: cleanField(e.techStack),
+      benefits: cleanField(e.benefits),
+      perks: cleanField(e.perks),
+      ageLimit: cleanField(e.ageLimit),
+      gender: cleanField(e.gender),
+      applyEmail: cleanField(e.applyEmail),
+      applySubject: cleanField(e.applySubject),
+      applyPhone: cleanField(e.applyPhone),
+    };
+  }
+
   function getJobRecord(jk) {
     const entry = cache[jk] || {};
     const link = document.querySelector(`${SELECTORS.jobCardLink}[data-jk="${escapeJk(jk)}"]`);
@@ -528,64 +567,44 @@
       link?.textContent ||
       link?.getAttribute('aria-label')?.replace(/^full details of\s+/i, '') ||
       '';
-    role = role.replace(/[\t\r\n]+/g, ' ').trim();
+    role = cleanField(role);
 
-    let company =
+    const company = cleanField(
       entry.companyName ||
-      card?.querySelector('[data-testid="company-name"], .companyName, [class*="companyName"]')
-        ?.textContent ||
-      '';
-    company = company.replace(/[\t\r\n]+/g, ' ').trim();
+        card?.querySelector('[data-testid="company-name"], .companyName, [class*="companyName"]')
+          ?.textContent ||
+        '',
+    );
 
-    let locationText =
+    const locationText = cleanField(
       entry.companyLocation ||
-      card?.querySelector(
-        '[data-testid="text-location"], .companyLocation, [class*="companyLocation"]',
-      )?.textContent ||
-      '';
-    locationText = locationText.replace(/[\t\r\n]+/g, ' ').trim();
+        card?.querySelector(
+          '[data-testid="text-location"], .companyLocation, [class*="companyLocation"]',
+        )?.textContent ||
+        '',
+    );
 
-    let dateText = '';
-    if (entry.datePostedIso) {
-      const d = new Date(entry.datePostedIso);
-      if (!isNaN(d.getTime())) {
-        dateText = d.toISOString().split('T')[0];
-      }
-    }
+    const fields = getEntryFields(entry);
+    let dateText = fields.posted;
     if (!dateText) {
+      // Falls back to whatever the page itself shows. NizViewer's own rows are
+      // absent in scraper mode, so Indeed's elements are listed alongside them.
       const dateEl = card?.querySelector(
-        '.nizviewer-info-row.badge-fresh .nizviewer-info-value, .nizviewer-info-row.badge-recent .nizviewer-info-value, .nizviewer-info-row.badge-old .nizviewer-info-value, [data-testid="myJobsStateDate"], .date',
+        '.nizviewer-info-row.badge-fresh .nizviewer-info-value, .nizviewer-info-row.badge-recent .nizviewer-info-value, .nizviewer-info-row.badge-old .nizviewer-info-value, .nizviewer-scrape-row.nizviewer-x-posted, [data-testid="myJobsStateDate"], .date',
       );
       if (dateEl) {
-        dateText = dateEl.textContent.replace(/[\t\r\n]+/g, ' ').trim();
+        dateText = cleanField(dateEl.textContent);
+        if (dateText === '-') dateText = '';
       }
     }
 
-    const workSetup = (entry.workSetup || '').replace(/[\t\r\n]+/g, ' ').trim();
-    const jobType = (entry.jobType || '').replace(/[\t\r\n]+/g, ' ').trim();
-    const degree = (entry.degree || '').replace(/[\t\r\n]+/g, ' ').trim();
-    const jobLink = `${location.origin}/viewjob?jk=${encodeURIComponent(jk)}`;
-    const salary = (entry.salary || '').replace(/[\t\r\n]+/g, ' ').trim();
-    const experience = (entry.experience || '').replace(/[\t\r\n]+/g, ' ').trim();
-
     return {
+      ...fields,
       role,
       company,
       location: locationText,
       posted: dateText,
-      workSetup,
-      jobType,
-      degree,
-      link: jobLink,
-      salary,
-      experience,
-      shift: (entry.shift || '').replace(/[\t\r\n]+/g, ' ').trim(),
-      techStack: (entry.techStack || '').replace(/[\t\r\n]+/g, ' ').trim(),
-      benefits: (entry.benefits || '').replace(/[\t\r\n]+/g, ' ').trim(),
-      perks: (entry.perks || '').replace(/[\t\r\n]+/g, ' ').trim(),
-      applyEmail: (entry.applyEmail || '').replace(/[\t\r\n]+/g, ' ').trim(),
-      applySubject: (entry.applySubject || '').replace(/[\t\r\n]+/g, ' ').trim(),
-      applyPhone: (entry.applyPhone || '').replace(/[\t\r\n]+/g, ' ').trim(),
+      link: jobUrlFor(jk),
     };
   }
 
@@ -605,6 +624,8 @@
       ['Tech Stack', 'techStack', badgePrefs.techStack],
       ['Benefits', 'benefits', badgePrefs.benefits],
       ['Perks', 'perks', badgePrefs.perks],
+      ['Age Limit', 'ageLimit', badgePrefs.ageLimit],
+      ['Gender', 'gender', badgePrefs.gender],
       ['Apply email', 'applyEmail', true],
       ['Email subject', 'applySubject', true],
       ['Apply phone', 'applyPhone', true],
@@ -722,36 +743,33 @@
       .join(' | ');
   }
 
-  // Scraper mode renders one element per field, always present, so generic DOM
-  // scrapers produce one stable column per field instead of one column per pill.
-  function buildScrapeBlock(entry, techs) {
+  // Indeed's own markup already exposes these, so scraper mode leaves them out
+  // rather than duplicating a column the scraper can read from the job card.
+  const SCRAPE_OMITTED_FIELDS = new Set(['role', 'company', 'location']);
+
+  // Scraper mode renders one element per exported field, always present, so
+  // generic DOM scrapers produce one stable column per field instead of one
+  // column per tech pill. Labels live in CSS generated content so they stay out
+  // of innerText and out of the scraped value.
+  function buildScrapeBlock(jk, entry, techs) {
     const block = document.createElement('div');
     block.className = 'nizviewer-scrape';
-    const fields = [
-      ['posted', 'Posted', String(entry.datePostedIso || '').slice(0, 10)],
-      ['salary', 'Salary', entry.salary],
-      ['setup', 'Work setup', entry.workSetup],
-      ['experience', 'Experience', entry.experience],
-      ['jobtype', 'Job type', entry.jobType],
-      ['degree', 'Degree', entry.degree],
-      ['shift', 'Shift', entry.shift],
-      ['benefits', 'Benefits', entry.benefits],
-      ['perks', 'Perks', entry.perks],
-      ['agelimit', 'Age limit', entry.ageLimit],
-      ['gender', 'Gender', entry.gender],
-      ['email', 'Apply email', entry.applyEmail],
-      ['phone', 'Apply phone', entry.applyPhone],
-      ['tech', 'Tech stack', summariseTechs(techs)],
-    ];
-    for (const [key, label, value] of fields) {
+    const fields = getEntryFields(entry);
+    fields.link = jobUrlFor(jk);
+    // Categories hidden in preferences stay out of cards, and this block is the
+    // card body in scraper mode, so it uses the same filtered list as the pills.
+    fields.techStack = summariseTechs(techs);
+    for (const [label, key] of getExportColumns()) {
+      if (SCRAPE_OMITTED_FIELDS.has(key)) continue;
+      const value = fields[key] || '';
       const row = document.createElement('div');
-      row.className = `nizviewer-scrape-row nizviewer-x-${key}`;
+      row.className = `nizviewer-scrape-row nizviewer-x-${key.toLowerCase()}`;
       row.dataset.nizField = key;
       row.dataset.label = label;
-      row.textContent =
-        String(value || '')
-          .replace(/s+/g, ' ')
-          .trim() || '-';
+      // A placeholder keeps every job's column count identical; it carries no
+      // information, so it is hidden from assistive technology.
+      row.textContent = value || '-';
+      if (!value) row.setAttribute('aria-hidden', 'true');
       block.appendChild(row);
     }
     return block;
@@ -992,11 +1010,11 @@
 
         if (scrapeMode) {
           card.classList.add('nizviewer-scrape-card');
-          card.appendChild(buildScrapeBlock(entry, techs));
+          card.appendChild(buildScrapeBlock(jk, entry, techs));
         } else {
           card.appendChild(rowsEl);
         }
-        if (expanded && !scrapeMode) {
+        if (expanded || scrapeMode) {
           const candidates = [
             ['Posting date', 'datePosted', 'datePostedIso'],
             ['Salary', 'salary', 'salary'],
@@ -1020,7 +1038,9 @@
             unavailable.textContent = `Not detected: ${missing.join(', ')}.`;
             card.appendChild(unavailable);
           }
-          if (entry.applyEmail) {
+          // Scraper mode drops the mailto/tel links: they are conditional
+          // elements, so their presence would shift a scraper's columns.
+          if (entry.applyEmail && !scrapeMode) {
             const apply = document.createElement('a');
             apply.className = 'nizviewer-apply-email';
             const params = entry.applySubject
@@ -1041,7 +1061,7 @@
               card.appendChild(subject);
             }
           }
-          if (entry.applyPhone) {
+          if (entry.applyPhone && !scrapeMode) {
             const phone = document.createElement('a');
             phone.className = 'nizviewer-apply-phone';
             phone.href = `tel:${entry.applyPhone.replace(/[^+\d]/g, '')}`;
@@ -1081,7 +1101,7 @@
         }
 
         const existingExpandBtn = actionsContainer.querySelector('.nizviewer-expand-btn');
-        if (badgePrefs.density === 'detailed') {
+        if (badgePrefs.density === 'detailed' || scrapeMode) {
           existingExpandBtn?.remove();
         } else {
           const expandBtn = existingExpandBtn || document.createElement('button');
@@ -1559,8 +1579,15 @@
     const link = document.createElement('a');
     link.href = url;
     link.download = `nizviewer-jobs-${new Date().toISOString().slice(0, 10)}.csv`;
+    // Firefox needs the anchor in the document, and revoking in the same tick
+    // can cancel the download before it starts.
+    link.style.display = 'none';
+    document.body.appendChild(link);
     link.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      link.remove();
+      URL.revokeObjectURL(url);
+    }, 1e4);
     announce(`${jks.length} jobs exported as CSV.`);
   }
 
