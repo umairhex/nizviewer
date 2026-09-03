@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NizViewer",
-  "version": "1.5.6",
+  "version": "1.6.0",
   "description": "Reveal Indeed job posting dates, salary, work setup, experience, shifts, and tech stacks directly on job cards.",
   "author": "NizViewer",
   "homepage_url": "https://umairhex.github.io/nizviewer/",
