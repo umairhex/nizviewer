@@ -223,6 +223,32 @@
   font-weight: 600 !important;
   line-height: 1.4 !important;
 }
+.nizviewer-scrape {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 4px 12px !important;
+}
+.nizviewer-scrape-row {
+  min-width: 0 !important;
+  padding: 2px 0 2px 7px !important;
+  border-left: 3px solid var(--nv-border) !important;
+  color: var(--nv-text) !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  line-height: 1.45 !important;
+  overflow-wrap: anywhere !important;
+}
+/* Labels are CSS generated content so scrapers read only the value. */
+.nizviewer-scrape-row::before {
+  content: attr(data-label) ': ';
+  color: var(--nv-muted) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+}
+.nizviewer-scrape-row.nizviewer-x-tech {
+  grid-column: 1/-1 !important;
+}
 .nizviewer-source-note {
   margin: 8px 0 0 !important;
   padding-top: 7px !important;

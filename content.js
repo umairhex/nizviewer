@@ -699,6 +699,64 @@
     });
   }
 
+  function techCategoryFor(tech) {
+    return typeof TECH_CATEGORY_MAP !== 'undefined'
+      ? TECH_CATEGORY_MAP[tech.toLowerCase()] || 'Other'
+      : 'Other';
+  }
+
+  function groupTechsByCategory(techs) {
+    const grouped = new Map();
+    for (const tech of techs) {
+      const label = techCategoryFor(tech);
+      if (!grouped.has(label)) grouped.set(label, []);
+      grouped.get(label).push(tech);
+    }
+    return grouped;
+  }
+
+  // One flat string so page scrapers read the whole stack as a single cell.
+  function summariseTechs(techs) {
+    return Array.from(groupTechsByCategory(techs).entries())
+      .map(([label, list]) => `${label}: ${list.join(', ')}`)
+      .join(' | ');
+  }
+
+  // Scraper mode renders one element per field, always present, so generic DOM
+  // scrapers produce one stable column per field instead of one column per pill.
+  function buildScrapeBlock(entry, techs) {
+    const block = document.createElement('div');
+    block.className = 'nizviewer-scrape';
+    const fields = [
+      ['posted', 'Posted', String(entry.datePostedIso || '').slice(0, 10)],
+      ['salary', 'Salary', entry.salary],
+      ['setup', 'Work setup', entry.workSetup],
+      ['experience', 'Experience', entry.experience],
+      ['jobtype', 'Job type', entry.jobType],
+      ['degree', 'Degree', entry.degree],
+      ['shift', 'Shift', entry.shift],
+      ['benefits', 'Benefits', entry.benefits],
+      ['perks', 'Perks', entry.perks],
+      ['agelimit', 'Age limit', entry.ageLimit],
+      ['gender', 'Gender', entry.gender],
+      ['email', 'Apply email', entry.applyEmail],
+      ['phone', 'Apply phone', entry.applyPhone],
+      ['tech', 'Tech stack', summariseTechs(techs)],
+    ];
+    for (const [key, label, value] of fields) {
+      const row = document.createElement('div');
+      row.className = `nizviewer-scrape-row nizviewer-x-${key}`;
+      row.dataset.nizField = key;
+      row.dataset.label = label;
+      row.textContent =
+        String(value || '')
+          .replace(/s+/g, ' ')
+          .trim() || '-';
+      block.appendChild(row);
+    }
+    return block;
+  }
+
   function makeInfoRow(label, value, cls, primary, title) {
     return { label, value, cls, primary: !!primary, title };
   }
@@ -875,16 +933,17 @@
 
       const techs = getVisibleTechs(entry);
       const expanded = expandedJobs.has(jk) || badgePrefs.density === 'detailed';
+      const scrapeMode = badgePrefs.scraperMode === true;
       const visibleRows = expanded ? infoRows : infoRows.filter((row) => row.primary).slice(0, 4);
 
-      if (infoRows.length || techs.length || expanded) {
+      if (infoRows.length || techs.length || expanded || scrapeMode) {
         const card = document.createElement('div');
         card.className = 'nizviewer-tech-stack-card';
 
         const rowsEl = document.createElement('div');
         rowsEl.className = 'nizviewer-tech-stack-rows';
 
-        for (const row of visibleRows) {
+        for (const row of scrapeMode ? [] : visibleRows) {
           const r = document.createElement('div');
           r.className = `nizviewer-info-row ${row.cls}`;
           if (row.title) r.title = row.title;
@@ -902,18 +961,8 @@
           rowsEl.appendChild(r);
         }
 
-        if (techs.length) {
-          const grouped = new Map();
-          for (const tech of techs) {
-            const label =
-              typeof TECH_CATEGORY_MAP !== 'undefined'
-                ? TECH_CATEGORY_MAP[tech.toLowerCase()] || 'Other'
-                : 'Other';
-            if (!grouped.has(label)) grouped.set(label, []);
-            grouped.get(label).push(tech);
-          }
-
-          const groups = Array.from(grouped.entries());
+        if (techs.length && !scrapeMode) {
+          const groups = Array.from(groupTechsByCategory(techs).entries());
           const visibleGroups = expanded ? groups : groups.slice(0, 1);
           for (const [label, originalList] of visibleGroups) {
             const list = expanded ? originalList : originalList.slice(0, 5);
@@ -941,8 +990,13 @@
           }
         }
 
-        card.appendChild(rowsEl);
-        if (expanded) {
+        if (scrapeMode) {
+          card.classList.add('nizviewer-scrape-card');
+          card.appendChild(buildScrapeBlock(entry, techs));
+        } else {
+          card.appendChild(rowsEl);
+        }
+        if (expanded && !scrapeMode) {
           const candidates = [
             ['Posting date', 'datePosted', 'datePostedIso'],
             ['Salary', 'salary', 'salary'],

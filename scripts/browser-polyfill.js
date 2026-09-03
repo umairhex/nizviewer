@@ -23,6 +23,7 @@ var DEFAULT_BADGE_PREFS = {
   hideByExperience: false,
   maxExperienceYears: 8,
   copyVisibleOnly: true,
+  scraperMode: false,
   hiddenTechCategories: {},
 };
 
@@ -57,6 +58,7 @@ function normalizeBadgePrefs(prefs) {
   const maxYears = Number(merged.maxExperienceYears);
   merged.maxExperienceYears = Number.isFinite(maxYears) ? Math.min(25, Math.max(0, maxYears)) : 8;
   merged.hideByExperience = merged.hideByExperience === true;
+  merged.scraperMode = merged.scraperMode === true;
   merged.hiddenTechCategories = { ...(merged.hiddenTechCategories || {}) };
   return merged;
 }

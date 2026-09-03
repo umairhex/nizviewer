@@ -104,6 +104,7 @@
         byId(id).value = prefs[id];
       }
       byId('hideOldJobs').checked = prefs.hideOldJobs === true;
+      byId('scraperMode').checked = prefs.scraperMode === true;
       document.querySelectorAll('[data-category]').forEach((input) => {
         input.checked = prefs.hiddenTechCategories?.[input.dataset.category] !== true;
       });
@@ -248,6 +249,15 @@
         event.target.checked
           ? 'Older jobs will be hidden with a recovery control.'
           : 'Older jobs remain visible.',
+      );
+    });
+    byId('scraperMode').addEventListener('change', (event) => {
+      prefs.scraperMode = event.target.checked;
+      syncControls();
+      savePrefs(
+        event.target.checked
+          ? 'Cards now render one line per field for scrapers.'
+          : 'Cards restored to the pill layout.',
       );
     });
     byId('hideByExperience').addEventListener('change', (event) => {
