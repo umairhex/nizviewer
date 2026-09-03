@@ -56,8 +56,24 @@
   border: 0 !important;
 }
 /* Keep result-card identity fields scannable without truncating standalone job pages. */
-:where(.cardOutline, [class*='cardOutline'], .tapItem, [data-testid='jobListing'], [class*='job_seen_beacon'])
-  :where(.jobTitle, [data-testid='jobTitle'], span[id^='jobTitle'], [data-testid='company-name'], .companyName, [class*='companyName'], [data-testid='text-location'], .companyLocation, [class*='companyLocation']) {
+:where(
+    .cardOutline,
+    [class*='cardOutline'],
+    .tapItem,
+    [data-testid='jobListing'],
+    [class*='job_seen_beacon']
+  )
+  :where(
+    .jobTitle,
+    [data-testid='jobTitle'],
+    span[id^='jobTitle'],
+    [data-testid='company-name'],
+    .companyName,
+    [class*='companyName'],
+    [data-testid='text-location'],
+    .companyLocation,
+    [class*='companyLocation']
+  ) {
   display: -webkit-box !important;
   line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -341,12 +357,12 @@
 .nizviewer-experience-hidden {
   display: none !important;
 }
-.nizviewer-card-fresh[style*="--nizviewer-card-color"],
-.nizviewer-card-hidden-old[style*="--nizviewer-card-color"],
-.nizviewer-experience-hidden[style*="--nizviewer-card-color"],
-[class*="cardOutline"][style*="--nizviewer-card-color"],
-.tapItem[style*="--nizviewer-card-color"],
-[data-testid="jobListing"][style*="--nizviewer-card-color"] {
+.nizviewer-card-fresh[style*='--nizviewer-card-color'],
+.nizviewer-card-hidden-old[style*='--nizviewer-card-color'],
+.nizviewer-experience-hidden[style*='--nizviewer-card-color'],
+[class*='cardOutline'][style*='--nizviewer-card-color'],
+.tapItem[style*='--nizviewer-card-color'],
+[data-testid='jobListing'][style*='--nizviewer-card-color'] {
   background-color: var(--nizviewer-card-color) !important;
 }
 .nizviewer-card-colored {
@@ -355,7 +371,7 @@
 /* Indeed wraps each result in additional white surfaces. Let the selected
    card color show through those structural layers while preserving controls. */
 .nizviewer-card-colored > .job_seen_beacon,
-.nizviewer-card-colored [class*="job_seen_beacon"],
+.nizviewer-card-colored [class*='job_seen_beacon'],
 .nizviewer-card-colored > table.jobCard_mainContent,
 .nizviewer-card-colored table.jobCard_mainContent,
 .nizviewer-card-colored > .jobCard_mainContent,

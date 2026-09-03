@@ -295,7 +295,9 @@
     let applyEmail;
     for (const match of Array.from(text.matchAll(emailPattern)).reverse()) {
       const context = text.slice(Math.max(0, match.index - 260), match.index + 420);
-      if (/(?:apply|application|send|submit|resume|cv|subject|interested candidates)/i.test(context)) {
+      if (
+        /(?:apply|application|send|submit|resume|cv|subject|interested candidates)/i.test(context)
+      ) {
         applyEmail = match[0].toLowerCase();
         applicationContext = context;
         break;
@@ -461,7 +463,9 @@
     const identityNodes = [
       title,
       card?.querySelector('[data-testid="company-name"], .companyName, [class*="companyName"]'),
-      card?.querySelector('[data-testid="text-location"], .companyLocation, [class*="companyLocation"]'),
+      card?.querySelector(
+        '[data-testid="text-location"], .companyLocation, [class*="companyLocation"]',
+      ),
     ].filter((node) => node && card?.contains(node));
     let insertionAnchor = identityNodes[0] || title;
     for (const node of identityNodes.slice(1)) {
@@ -1143,7 +1147,6 @@
             updateFeedSummary();
           });
         }
-
       }
     } finally {
       setTimeout(() => {
@@ -1751,7 +1754,9 @@
         ? 'Hide older jobs'
         : `Show older jobs${hidden ? ` (${hidden})` : ''}`;
     }
-    const experienceReveal = document.querySelector('#nizviewer-feed-toolbar [data-action="reveal-experience"]');
+    const experienceReveal = document.querySelector(
+      '#nizviewer-feed-toolbar [data-action="reveal-experience"]',
+    );
     if (experienceReveal) {
       experienceReveal.hidden = badgePrefs.hideByExperience !== true;
       experienceReveal.textContent = revealExperienceJobs

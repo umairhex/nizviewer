@@ -29,7 +29,10 @@ var DEFAULT_BADGE_PREFS = {
 var COLOR_RULE_FIELDS = ['age', 'experience'];
 var COLOR_RULE_OPERATORS = ['lt', 'lte', 'gt', 'gte', 'eq'];
 function isValidHexColor(value) {
-  return typeof value === 'string' && /^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value);
+  return (
+    typeof value === 'string' &&
+    /^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value)
+  );
 }
 function normalizeCardColorRules(rules) {
   if (!Array.isArray(rules)) return [];

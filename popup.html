@@ -85,9 +85,22 @@
       .row:last-child {
         border: 0;
       }
-      .color-rule { gap: 6px; align-items: center; flex-wrap: wrap; }
-      .color-rule select, .color-rule input[type='number'] { flex: 1 1 105px; min-width: 0; }
-      .color-rule input[type='text'] { flex: 0 1 105px; width: 105px; min-width: 90px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .color-rule {
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .color-rule select,
+      .color-rule input[type='number'] {
+        flex: 1 1 105px;
+        min-width: 0;
+      }
+      .color-rule input[type='text'] {
+        flex: 0 1 105px;
+        width: 105px;
+        min-width: 90px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
       .row label:first-child,
       .row > span:first-child {
         font-weight: 600;
@@ -298,13 +311,23 @@
         </div>
         <div class="row">
           <label for="maxExperienceYears">Maximum required experience (years)</label
-          ><input id="maxExperienceYears" data-pref="maxExperienceYears" type="number" min="0" max="25" step="0.5" />
+          ><input
+            id="maxExperienceYears"
+            data-pref="maxExperienceYears"
+            type="number"
+            min="0"
+            max="25"
+            step="0.5"
+          />
         </div>
       </section>
 
       <div class="section-head"><h2>Conditional card colors</h2></div>
       <section class="card" id="colorRulesCard">
-        <p class="help">The first matching rule wins. Enter a CSS hex value such as #eaf8f1; colors apply to the whole Indeed result card.</p>
+        <p class="help">
+          The first matching rule wins. Enter a CSS hex value such as #eaf8f1; colors apply to the
+          whole Indeed result card.
+        </p>
         <div id="colorRules" aria-live="polite"></div>
         <button id="addColorRule" type="button">Add color rule</button>
       </section>
